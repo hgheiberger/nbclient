@@ -262,17 +262,17 @@ export default {
                 return "background-color: none; stroke: rgb(255 204 1 / 95%); stroke-dasharray: 3;"
             }
             if (!this.thread) {
-                return 'background-color: rgba(231, 76, 60, 0.3); fill-opacity: 0.3; cursor: pointer;'
+                return 'background-color: rgba(231, 76, 60, 0.3); cursor: pointer;'
             }
             if (this.thread === this.threadSelected) {
-                return 'background-color: rgba(1, 99, 255, 0.3); fill-opacity: 0.3;'
+                return 'background-color: rgba(1, 99, 255, 0.3);'
             }
             if (this.threadsHovered.includes(this.thread)) {
                 return 'background-color: rgba(1, 99, 255, 0.12); fill-opacity: 0.12;'
             }
             if (this.showSpotlights && this.spotlight && this.spotlight.type === 'EM' && this.currentConfigs.isEmphasize) {
                 let color = this.spotlight.color? this.spotlight.color : 'rgba(0, 255, 0, 0.3)'
-                return `stroke: ${color}; background-color: ${color}; fill-opacity: 0.3; stroke-opacity: 0.9; stroke-dasharray: 1,1; stroke-width: 2px;`
+                return `stroke: ${color}; background-color: ${color}; stroke-opacity: 0.9; stroke-dasharray: 1,1; stroke-width: 2px;`
             }
             if (this.showTypingActivityAnimation) { // if typing, show a pink outline color
                 // return 'stroke: rgb(255, 0, 255); stroke-width: 25'
@@ -295,7 +295,7 @@ export default {
             //         return 'fill: rgb(255, 0, 255); opacity: 0.5;'
             //     }
             // }
-            return 'background-color: rgba(255, 204, 1, 0.2); fill-opacity: 0.3;'
+            return 'background-color: rgba(255, 204, 1, 0.2);'
         },
         isRecentThread: function () {
             return this.thread && this.recent && this.showSyncFeatures
@@ -339,7 +339,7 @@ export default {
         },
         highlightId: function () {
             if (this.thread) {
-                return this.thread.id
+                return `id${this.thread.id.substring(0, 12)}`
             } else {
                 let range = this.range.toRange()
                 return `${range.startContainer.nodeValue}-${range.startOffset}-${range.endOffset}`
