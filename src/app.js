@@ -28,7 +28,7 @@ import VueJwtDecode from "vue-jwt-decode";
 import io from "socket.io-client";
 import { Environments } from './environments'
 
-const currentEnv = Environments.dev
+const currentEnv = Environments.prod
 
 Vue.use(VueQuill)
 Vue.use(VTooltip)
@@ -1150,9 +1150,11 @@ function embedNbApp() {
             onNewThread: function (thread) {
                 this.threads.push(thread)
                 this.draftRange = null
+                this.clearDraftHighlights()
             },
             onCancelDraft: function () {
                 this.draftRange = null
+                this.clearDraftHighlights()
             },
             onEditorEmpty: function (isEmpty) {
                 this.isEditorEmpty = isEmpty
@@ -1673,6 +1675,15 @@ function embedNbApp() {
                 if (this.currentConfigs.nbLogEventsEnabled.includes('SCROLL')) {
                     clearTimeout(this.scrollLogTimer)
                     this.scrollLogTimer = setTimeout(() => this.onLogNb('SCROLL'), this.currentConfigs.nbLogScrollSpoConfig)
+                }
+            },
+            clearDraftHighlights: function (e) {
+                for (const [name, highlight] of CSS.highlights) {
+                    // Check if the name starts with "null"
+                    if (name.startsWith('null')) {
+                      // Delete the highlight from the registry
+                      CSS.highlights.delete(name)
+                    }
                 }
             }
         },
