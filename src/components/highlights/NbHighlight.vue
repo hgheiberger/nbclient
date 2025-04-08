@@ -141,6 +141,7 @@ export default {
     data () {
         return {
         recent: false,
+        isHovered: false,
         }
     },
     mounted () {
@@ -165,9 +166,13 @@ export default {
                 }, totalTime-timeDiff) // we still have 60 seconds - time diff left to display this recent annotation
             }
         }
+        document.addEventListener('mousemove', this.handleMouseMove)
+        document.addEventListener('click', this.handleMouseClick)
         this.generateHighlights()
     },
     unmounted () {
+        document.removeEventListener('mousemove', this.handleMouseMove)
+        document.removeEventListener('click', this.handleMouseClick)
         CSS.highlights.delete(this.highlightId)
         const existingStyle = document.querySelector(`style[highlight-id="${this.highlightId}"]`)
         if (existingStyle) {
@@ -388,6 +393,30 @@ export default {
                 this.$emit('select-thread', this.thread, 'HIGHLIGHT')
             }
         },
+        handleMouseMove: function (event) {
+            if (this.thread && this.visible) {
+                const mousePoint = document.caretPositionFromPoint(event.clientX, event.clientY)
+                const range = this.thread.range.toRange()
+                const existingStyle = document.querySelector(`style[highlight-id="${this.highlightId}"]`)
+                if (existingStyle && mousePoint && range.isPointInRange(mousePoint.offsetNode, mousePoint.offset)) {
+                    this.isHovered = true
+                    this.onHover(true)
+                } else if (this.isHovered) {
+                    this.isHovered = false
+                    this.onHover(false)
+                }
+            }
+        },
+        handleMouseClick: function (event) {
+            if (this.thread && this.visible) {
+                const mousePoint = document.caretPositionFromPoint(event.clientX, event.clientY)
+                const range = this.thread.range.toRange()
+                const existingStyle = document.querySelector(`style[highlight-id="${this.highlightId}"]`)
+                if (existingStyle && mousePoint && range.isPointInRange(mousePoint.offsetNode, mousePoint.offset)) {
+                    this.onClick()
+                }
+            }
+        },
         logNbClick: function () {
             if (this.unseenNotificationThread || this.isTypingThread || this.isRecentThread || this.showTypingActivityAnimation) {
                 let trigger_type = ''
@@ -486,7 +515,7 @@ export default {
                 CSS.highlights.set(this.highlightId, highlight)
                 this.updateHighlightStyle()
             }
-        }
+        },
     }
 }
 </script>
