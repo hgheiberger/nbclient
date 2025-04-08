@@ -1145,6 +1145,14 @@ function embedNbApp() {
                     const token = localStorage.getItem("nb.user");
                     const headers = { headers: { Authorization: 'Bearer ' + token } }
                     axios.delete(`/api/annotations/annotation/${thread.id}`, headers)
+                    
+                    // Remove CSS higlight for this thread
+                    let threadHighlightId = `id${thread.id.substring(0, 12)}`
+                    CSS.highlights.delete(threadHighlightId)
+                    const existingStyle = document.querySelector(`style[highlight-id="${threadHighlightId}"]`)
+                    if (existingStyle) {
+                        existingStyle.remove()
+                    }
                 }
             },
             onNewThread: function (thread) {
