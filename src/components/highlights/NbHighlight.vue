@@ -3,9 +3,6 @@
         class="nb-highlight"
         v-if="visible"
         :style="style"
-        @click="onClick()"
-        @mouseenter="onHover(true)"
-        @mouseleave="onHover(false)"
         v-tooltip="{
             content: getTooltipContent(),
         }"
@@ -16,7 +13,8 @@
             :x="box.left + bounds.offsetX"
             :y="box.top + bounds.offsetY"
             :height="box.height"
-            :width="box.width">
+            :width="box.width"
+            visibility="hidden">
             <animate
                 v-if="showRecentActivityAnimation"
                 attributeType="XML"
@@ -186,14 +184,13 @@ export default {
         */
         threadSelected: function (val) {
             if (this.thread !== val) { return }
-            let rect = this.$el.getBoundingClientRect()
+            let nodeContainingRange = this.thread.range.toRange().commonAncestorContainer
+            let rect = nodeContainingRange.getBoundingClientRect()
             let elTop = rect.top
             let elHeight = rect.height
             let viewHeight = window.innerHeight
             if (elTop < 0 || (elTop + elHeight) > viewHeight) {
-                let viewTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
-                let center = viewTop + elTop + (elHeight / 2) - (viewHeight / 2)
-                window.scrollTo({ top: center, left: 0, behavior: 'smooth' })
+                nodeContainingRange.scrollIntoView({ behavior: 'smooth', block: 'center' })
             }
         },
         visible: function (val) {
