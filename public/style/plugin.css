@@ -1781,3 +1781,22 @@ div.trigger span {
     padding: 1.3rem;                                                  
   }
 }
+
+/* Image Annotations  */
+.image-annotation-container {
+  position: relative;
+  display: inline-block;
+}
+ 
+.image-annotation-container img {
+  display: block;
+  width: 100%;
+}
+ 
+.image-annotation-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}

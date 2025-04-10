@@ -851,6 +851,25 @@ function embedNbApp() {
             document.addEventListener('dragstart', this.dragStart)
             document.addEventListener('dragover', this.dragOver)
             document.addEventListener('dragend', this.dragEnd)
+
+            for (let imageIndex = 0; imageIndex < document.images.length; imageIndex++) {
+                console.log("ImageIndex: ${imageIndex}")
+                let image = document.images[imageIndex]
+
+                // Wrap the image in a div
+                let parent = image.parentNode
+                let wrapper = document.createElement('div')
+                wrapper.className = 'image-annotation-container'
+                parent.replaceChild(wrapper, image)
+                wrapper.appendChild(image)
+
+                // Create a SVG to hold image annotations
+                let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+                svg.setAttribute('width', image.clientWidth)
+                svg.setAttribute('height', image.clientHeight)
+                svg.classList.add('image-annotation-overlay')
+                wrapper.appendChild(svg)
+            }
         },
         unmounted () {
             document.removeEventListener('dragstart', this.dragStart)
