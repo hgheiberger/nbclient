@@ -28,7 +28,7 @@ import VueJwtDecode from "vue-jwt-decode";
 import io from "socket.io-client";
 import { Environments } from './environments'
 
-const currentEnv = Environments.prod
+const currentEnv = Environments.dev
 
 Vue.use(VueQuill)
 Vue.use(VTooltip)
@@ -358,6 +358,7 @@ function embedNbApp() {
             },
             syncConfig: false,
             isDragging: false, // indicates if there's a dragging happening in the UI
+            isAnnotatingImage: false,
             sidebarWidth: 300,
             mousePosition: null,
             redrawHighlightsKey: Date.now(), // work around to force redraw highlights
@@ -377,6 +378,7 @@ function embedNbApp() {
             nbLogEventsOrder: 0,
             filterLogTimer: null,
             scrollLogTimer: null,
+            blankImage: null,
         },
         computed: {
             style: function () {
@@ -843,6 +845,18 @@ function embedNbApp() {
         destroyed: function () {
             window.removeEventListener('scroll', this.handleScroll)
         },
+        mounted () {
+            self.blankImage = new Image()
+            self.blankImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs='
+            document.addEventListener('dragstart', this.dragStart)
+            document.addEventListener('dragover', this.dragOver)
+            document.addEventListener('dragend', this.dragEnd)
+        },
+        unmounted () {
+            document.removeEventListener('dragstart', this.dragStart)
+            document.removeEventListener('dragover', this.dragOver)
+            document.removeEventListener('dragend', this.dragEnd)
+        },
         methods: {
             dragging: function (isDragging) {
                 this.isDragging = isDragging
@@ -851,9 +865,31 @@ function embedNbApp() {
                 this.mousePosition = position
             },
             mouseUp: function (e) {
+                console.log(`mouseup: this.isAnnotatingImage: ${this.isAnnotatingImage}`)
                 if (this.isDragging) {
                     e.preventDefault()
                     this.isDragging = false
+                } else if (this.isAnnotatingImage) {
+                    this.isAnnotatingImage = false
+                    return false
+                }
+            },
+            dragStart: function (e) {
+                if (e.target.tagName.toLowerCase() === 'img') {
+                    e.dataTransfer.setDragImage(self.blankImage, 0, 0)
+                    this.isAnnotatingImage = true
+                    return false
+                  }
+            },
+            dragOver: function (e) {
+                if (this.isAnnotatingImage) {
+                    e.preventDefault()
+                }
+            },
+            dragEnd: function (e) {
+                if (this.isAnnotatingImage) {
+                    this.isAnnotatingImage = false
+                    return false
                 }
             },
             mouseLeave: function (e) {
