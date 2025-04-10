@@ -359,7 +359,9 @@ function embedNbApp() {
             syncConfig: false,
             isDragging: false, // indicates if there's a dragging happening in the UI
             isAnnotatingImage: false,
-            imageAnnotationSvg: null,
+            drawAnnotationSvg: null,
+            drawAnnotationDraftRect: null,
+            drawAnnotationStartPoint: null,
             sidebarWidth: 300,
             mousePosition: null,
             redrawHighlightsKey: Date.now(), // work around to force redraw highlights
@@ -847,8 +849,8 @@ function embedNbApp() {
             window.removeEventListener('scroll', this.handleScroll)
         },
         mounted () {
-            self.blankImage = new Image()
-            self.blankImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs='
+            this.blankImage = new Image()
+            this.blankImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs='
             document.addEventListener('dragstart', this.dragStart)
             document.addEventListener('dragover', this.dragOver)
             document.addEventListener('dragend', this.dragEnd)
@@ -896,15 +898,22 @@ function embedNbApp() {
             dragStart: function (e) {
                 // Handles image annotation
                 if (e.target.tagName.toLowerCase() === 'img') {
-                    e.dataTransfer.setDragImage(self.blankImage, 0, 0)
+                    e.dataTransfer.setDragImage(this.blankImage, 0, 0)
                     this.isAnnotatingImage = true
-                    self.imageAnnotationSvg = e.target.parentNode.querySelector('svg')
+                    console.log(`This is what I am storing: ${e.target.parentNode.querySelector('svg')}`)
+                    this.drawAnnotationSvg = e.target.parentNode.querySelector('svg')
+                    console.log('this.drawAnnotationSvg: ', this.drawAnnotationSvg)
+                    this.drawAnnotationDraftRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+                    this.drawAnnotationStartPoint = this.createSvgPoint(this.drawAnnotationSvg, e.clientX, e.clientY)
                     return false
                   }
             },
             dragOver: function (e) {
                 if (this.isAnnotatingImage) {
                     e.preventDefault()
+                    if (this.drawAnnotationSvg) {  
+                        this.updateDrawAnnotationRect(this.drawAnnotationSvg, this.drawAnnotationDraftRect, this.drawAnnotationStartPoint, e)
+                    }
                 }
             },
             dragEnd: function (e) {
@@ -1750,6 +1759,32 @@ function embedNbApp() {
                       CSS.highlights.delete(name)
                     }
                 }
+            },
+            createSvgPoint: function (svgElem, x, y) {
+                console.log(`createSvgPoint Call svgElem ${svgElem}`)
+                console.log(`Actual variable value using self: ${this.drawAnnotationSvg}`)
+                const p = svgElem.createSVGPoint()
+                p.x = x
+                p.y = y
+                return p.matrixTransform(svgElem.getScreenCTM().inverse())
+            },
+            updateDrawAnnotationRect: function (svgElem, rect, rectStartPoint, mousePosEvent) {
+                const p = this.createSvgPoint(svgElem, mousePosEvent.clientX, mousePosEvent.clientY)
+                const w = Math.abs(p.x - rectStartPoint.x)
+                const h = Math.abs(p.y - rectStartPoint.y)
+                if (p.x > rectStartPoint.x) {
+                  p.x = rectStartPoint.x
+                }
+             
+                if (p.y > rectStartPoint.y) {
+                  p.y = rectStartPoint.y
+                }
+             
+                rect.setAttributeNS(null, 'x', p.x)
+                rect.setAttributeNS(null, 'y', p.y)
+                rect.setAttributeNS(null, 'width', w)
+                rect.setAttributeNS(null, 'height', h)
+                svgElem.appendChild(rect)
             }
         },
         components: {
