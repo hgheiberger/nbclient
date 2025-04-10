@@ -359,6 +359,7 @@ function embedNbApp() {
             syncConfig: false,
             isDragging: false, // indicates if there's a dragging happening in the UI
             isAnnotatingImage: false,
+            imageAnnotationSvg: null,
             sidebarWidth: 300,
             mousePosition: null,
             redrawHighlightsKey: Date.now(), // work around to force redraw highlights
@@ -853,7 +854,6 @@ function embedNbApp() {
             document.addEventListener('dragend', this.dragEnd)
 
             for (let imageIndex = 0; imageIndex < document.images.length; imageIndex++) {
-                console.log("ImageIndex: ${imageIndex}")
                 let image = document.images[imageIndex]
 
                 // Wrap the image in a div
@@ -894,9 +894,11 @@ function embedNbApp() {
                 }
             },
             dragStart: function (e) {
+                // Handles image annotation
                 if (e.target.tagName.toLowerCase() === 'img') {
                     e.dataTransfer.setDragImage(self.blankImage, 0, 0)
                     this.isAnnotatingImage = true
+                    self.imageAnnotationSvg = e.target.parentNode.querySelector('svg')
                     return false
                   }
             },
