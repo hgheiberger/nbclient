@@ -158,6 +158,8 @@ function embedNbApp() {
                     :thread-selected="threadSelected"
                     :threads-hovered="threadsHovered"
                     :draft-range="draftRange"
+                    :drawAnnotationDraftRect="drawAnnotationDraftRect"
+                    :drawAnnotationDraftSvg="drawAnnotationSvg"
                     :show-highlights="showHighlights"
                     :show-spotlights="showSpotlights"
                     :user="user"
@@ -360,8 +362,9 @@ function embedNbApp() {
             isDragging: false, // indicates if there's a dragging happening in the UI
             isAnnotatingImage: false,
             drawAnnotationSvg: null,
-            drawAnnotationDraftRect: null,
             drawAnnotationStartPoint: null,
+            drawAnnotationInProgressRect: null, // Rectangle placeholder while still dragging a draw annotation
+            drawAnnotationDraftRect: null, // Created rectangle after the drag of a draw annotation completes
             sidebarWidth: 300,
             mousePosition: null,
             redrawHighlightsKey: Date.now(), // work around to force redraw highlights
@@ -886,7 +889,6 @@ function embedNbApp() {
                 this.mousePosition = position
             },
             mouseUp: function (e) {
-                console.log(`mouseup: this.isAnnotatingImage: ${this.isAnnotatingImage}`)
                 if (this.isDragging) {
                     e.preventDefault()
                     this.isDragging = false
@@ -897,13 +899,12 @@ function embedNbApp() {
             },
             dragStart: function (e) {
                 // Handles image annotation
-                if (e.target.tagName.toLowerCase() === 'img') {
+                if (this.user && e.target.tagName.toLowerCase() === 'img') {
+                    app.onUnselectThread()
                     e.dataTransfer.setDragImage(this.blankImage, 0, 0)
                     this.isAnnotatingImage = true
-                    console.log(`This is what I am storing: ${e.target.parentNode.querySelector('svg')}`)
                     this.drawAnnotationSvg = e.target.parentNode.querySelector('svg')
-                    console.log('this.drawAnnotationSvg: ', this.drawAnnotationSvg)
-                    this.drawAnnotationDraftRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+                    this.drawAnnotationInProgressRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
                     this.drawAnnotationStartPoint = this.createSvgPoint(this.drawAnnotationSvg, e.clientX, e.clientY)
                     return false
                   }
@@ -911,15 +912,18 @@ function embedNbApp() {
             dragOver: function (e) {
                 if (this.isAnnotatingImage) {
                     e.preventDefault()
-                    if (this.drawAnnotationSvg) {  
-                        this.updateDrawAnnotationRect(this.drawAnnotationSvg, this.drawAnnotationDraftRect, this.drawAnnotationStartPoint, e)
+                    if (this.drawAnnotationSvg) {
+                        this.updateDrawAnnotationRect(this.drawAnnotationSvg, this.drawAnnotationInProgressRect, this.drawAnnotationStartPoint, e)
                     }
                 }
             },
             dragEnd: function (e) {
                 if (this.isAnnotatingImage) {
                     this.isAnnotatingImage = false
-                    return false
+                    if (this.drawAnnotationInProgressRect) {
+                        app.draftThread(null)
+                    }
+                return false
                 }
             },
             mouseLeave: function (e) {
@@ -1200,7 +1204,13 @@ function embedNbApp() {
                         socket.emit('thread-stop-typing', { threadId: this.threadSelected.id, username: this.user.username }) // drafting new thread so stop typing on this thread
                         this.threadSelected = null
                     }
-                    this.draftRange = createNbRange(range)
+                    if (this.drawAnnotationInProgressRect) {
+                        this.drawAnnotationDraftRect = this.drawAnnotationInProgressRect
+                        this.clearDrawAnnotationInProgress()
+                    } else {
+                        this.clearDrawAnnotationDraft()
+                        this.draftRange = createNbRange(range)
+                    }
                 }
             },
             onDeleteThread: function (thread) {
@@ -1225,10 +1235,15 @@ function embedNbApp() {
                 this.threads.push(thread)
                 this.draftRange = null
                 this.clearDraftHighlights()
+                this.clearDrawAnnotationDraft()
+                this.clearDrawAnnotationInProgress()
             },
             onCancelDraft: function () {
                 this.draftRange = null
                 this.clearDraftHighlights()
+                this.clearDrawAnnotationDraft()
+                this.clearDrawAnnotationInProgress()
+
             },
             onEditorEmpty: function (isEmpty) {
                 this.isEditorEmpty = isEmpty
@@ -1412,7 +1427,7 @@ function embedNbApp() {
                     this.threadSelected = null
                 }
 
-                if (this.draftRange && this.isEditorEmpty) {
+                if ((this.draftRange && this.isEditorEmpty) || this.drawAnnotationDraftRect || this.drawAnnotationInProgressRect) {
                     this.onCancelDraft()
                 }
 
@@ -1761,8 +1776,6 @@ function embedNbApp() {
                 }
             },
             createSvgPoint: function (svgElem, x, y) {
-                console.log(`createSvgPoint Call svgElem ${svgElem}`)
-                console.log(`Actual variable value using self: ${this.drawAnnotationSvg}`)
                 const p = svgElem.createSVGPoint()
                 p.x = x
                 p.y = y
@@ -1785,6 +1798,19 @@ function embedNbApp() {
                 rect.setAttributeNS(null, 'width', w)
                 rect.setAttributeNS(null, 'height', h)
                 svgElem.appendChild(rect)
+            },
+            clearDrawAnnotationDraft: function () {
+                if (this.drawAnnotationDraftRect) {
+                    console.log(`clearDrawAnnotationDraft in if with value: ${this.drawAnnotationDraftRect}`)
+                    this.drawAnnotationDraftRect.remove()
+                    this.drawAnnotationDraftRect = null
+                }
+            },
+            clearDrawAnnotationInProgress: function () {
+                if (this.drawAnnotationInProgressRect) {
+                    this.drawAnnotationInProgressRect.remove()
+                    this.drawAnnotationInProgressRect = null
+                }
             }
         },
         components: {

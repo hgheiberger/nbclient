@@ -41,6 +41,11 @@
             v-if="draftRange"
             :range="draftRange">
         </nb-highlight>
+        <nb-highlight
+            v-if="drawAnnotationDraftRect"
+            :drawAnnotationDraftRect="drawAnnotationDraftRect"
+            :drawAnnotationDraftSvg="drawAnnotationDraftSvg">
+        </nb-highlight>
     </svg>
 </template>
 
@@ -56,6 +61,8 @@ import { eventsProxyMouse } from '../../utils/highlight-util.js'
  * @vue-prop {NbComment} threadSelected - currently selected thread
  * @vue-prop {Array<NbComment>} threadsHovered=([]) - currently hovered threads
  * @vue-prop {NbRange} draftRange - text range for the new thread currently being drafted
+ * @vue-prop {Rect} drawAnnotationDraftRect - HTML rect element for the draw annotation draft
+ * @vue-prop {SVG} drawAnnotationDraftSvg - SVG element in which to insert the draft rect
  * @vue-prop {Boolean} showHighlights=true - true if highlights are overlayed
  *   on text, false if collapsed to the side
  *
@@ -85,6 +92,8 @@ export default {
             default: () => []
         },
         draftRange: Object,
+        drawAnnotationDraftRect: Object,
+        drawAnnotationDraftSvg: Object,
         showHighlights: {
             type: Boolean,
             default: true

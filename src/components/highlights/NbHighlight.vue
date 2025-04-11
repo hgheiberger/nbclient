@@ -80,6 +80,8 @@ import axios from 'axios'
  * @vue-prop {NbComment} threadSelected - currently selected thread
  * @vue-prop {Array<NbComment>} threadsHovered=[] - currently hovered threads
  * @vue-prop {NbRange} range - text range for this higlight
+ * @vue-prop {Rect} drawAnnotationDraftRect - HTML rect element for the draw annotation draft
+ * @vue-prop {SVG} drawAnnotationDraftSvg - SVG element in which to insert the draft rect
  * @vue-prop {Boolean} showHighlights=true - true if highlights are overlayed
  *   on text, false if collapsed to the side
  *
@@ -111,6 +113,8 @@ export default {
             default: () => []
         },
         range: Object,
+        drawAnnotationDraftRect: Object,
+        drawAnnotationDraftSvg: Object,
         showHighlights: {
             type: Boolean,
             default: true
@@ -200,6 +204,9 @@ export default {
             this.generateHighlights()
         },
         range: function (val) {
+            this.generateHighlights()
+        },
+        drawAnnotationDraftRect: function (val) {
             this.generateHighlights()
         },
         highlightId: function (newVal, oldVal) {
@@ -329,6 +336,9 @@ export default {
             let bounds = {}
             if (this.thread) {
                 bounds.boxes = getTextBoundingBoxes(this.thread.range.toRange())
+            } else if (this.drawAnnotationDraftRect) {
+                bounds.boxes = {}
+                return bounds
             } else {
                 bounds.boxes = getTextBoundingBoxes(this.range.toRange())
             }
@@ -342,6 +352,8 @@ export default {
         highlightId: function () {
             if (this.thread) {
                 return `id${this.thread.id.substring(0, 12)}`
+            } else if (this.drawAnnotationDraftRect) {
+                return `id${this.drawAnnotationDraftSvg.getBBox()}-${this.drawAnnotationDraftRect.x}-${this.drawAnnotationDraftRect.y}-${this.drawAnnotationDraftRect.width}-${this.drawAnnotationDraftRect.height}`
             } else {
                 let range = this.range.toRange()
                 return `${range.startContainer.nodeValue}-${range.startOffset}-${range.endOffset}`
@@ -497,10 +509,19 @@ export default {
             document.head.appendChild(style)
         },
         generateHighlights: function () {
+            // Handles draw annotations
+            if (this.drawAnnotationDraftRect) {
+               if (document.body.contains(this.drawAnnotationDraftRect)) {
+                this.drawAnnotationDraftRect.remove()
+               }
+                this.drawAnnotationDraftSvg.appendChild(this.drawAnnotationDraftRect)
+                return
+            }
+            
             // Clears existing highlight
             CSS.highlights.delete(this.highlightId)
             
-            // Creates new highlight
+            // Creates new text highlight
             let range
             if (this.thread) {
                 range = this.thread.range.toRange()
