@@ -907,6 +907,7 @@ function embedNbApp() {
                     this.isAnnotatingImage = true
                     this.drawAnnotationSvg = e.target.parentNode.querySelector('svg')
                     this.drawAnnotationInProgressRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+                    this.drawAnnotationInProgressRect.setAttribute('style', 'fill: rgb(231, 76, 60); fill-opacity: 0.3; cursor: pointer;')
                     this.drawAnnotationStartPoint = this.createSvgPoint(this.drawAnnotationSvg, e.clientX, e.clientY)
                     return false
                   }

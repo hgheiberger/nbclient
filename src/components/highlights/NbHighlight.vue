@@ -514,6 +514,7 @@ export default {
                if (document.body.contains(this.drawAnnotationDraftRect)) {
                 this.drawAnnotationDraftRect.remove()
                }
+                this.drawAnnotationDraftRect.style = this.style
                 this.drawAnnotationDraftSvg.appendChild(this.drawAnnotationDraftRect)
                 return
             }
