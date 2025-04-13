@@ -38,7 +38,7 @@
             @new-recent-thread="$emit('new-recent-thread', thread)">
         </nb-highlight>
         <nb-highlight
-            v-if="draftRange"
+            v-if="draftRange && !drawAnnotationDraftRect"
             :range="draftRange">
         </nb-highlight>
         <nb-highlight

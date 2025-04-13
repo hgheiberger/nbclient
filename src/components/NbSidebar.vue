@@ -206,6 +206,8 @@ export default {
             default: () => []
         },
         draftRange: Object,
+        drawAnnotationDraftRect: Object, // HTML rect element for the draw annotation draft
+        drawAnnotationDraftSvg: Object, // SVG element in which to insert the draft rect
         showHighlights: {
             type: Boolean,
             default: true
@@ -467,6 +469,8 @@ export default {
             let comment = new NbComment({
                 id: null, // will be updated when submitAnnotation() is called
                 range: null, // null if this is reply
+                drawAnnotationDraftRect: this.drawAnnotationDraftRect, // null if not a draw annotation
+                drawAnnotationDraftSvg: this.drawAnnotationDraftSvg, // null if not a draw annotation
                 parent: data.replyToComment.parent, // null if this is the head of thread
                 timestamp: null,
                 author: this.user.id,
@@ -508,6 +512,8 @@ export default {
                         id: null, // will be updated when submitAnnotation() is called
                         type: data.type,
                         range: this.draftRange, // null if this is reply
+                        drawAnnotationDraftRect: this.drawAnnotationDraftRect, // null if not a draw annotation
+                        drawAnnotationDraftSvg: this.drawAnnotationDraftSvg, // null if not a draw annotation
                         parent: this.replyToComment, // null if this is the head of thread
                         timestamp: null,
                         author: this.user.id,

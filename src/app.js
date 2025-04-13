@@ -213,6 +213,8 @@ function embedNbApp() {
                     :notification-threads="notificationThreads"
                     :threads-hovered="threadsHovered"
                     :draft-range="draftRange"
+                    :drawAnnotationDraftRect="drawAnnotationDraftRect"
+                    :drawAnnotationDraftSvg="drawAnnotationSvg"
                     :show-highlights="showHighlights"
                     :show-spotlights="showSpotlights"
                     :source-url="sourceURL"
@@ -1206,6 +1208,7 @@ function embedNbApp() {
                     }
                     if (this.drawAnnotationInProgressRect) {
                         this.drawAnnotationDraftRect = this.drawAnnotationInProgressRect
+                        this.draftRange = new Range()
                         this.clearDrawAnnotationInProgress()
                     } else {
                         this.clearDrawAnnotationDraft()

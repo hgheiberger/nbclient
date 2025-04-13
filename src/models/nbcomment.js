@@ -2,6 +2,7 @@ import htmlToText from 'html-to-text'
 import axios from 'axios'
 import { CommentVisibility, CommentAnonymity } from './enums.js'
 import { compare } from '../utils/compare-util.js'
+import * as DomUtil from '../utils/dom-util.js'
 
 /** Class representing a comment (thread head or reply) in NB. */
 class NbComment {
@@ -10,6 +11,8 @@ class NbComment {
      * @param {Object} data
      * @param {?String} data.id - comment ID, sets {@link NbComment#id}
      * @param {?NbRange} data.range - range of text, sets {@link NbComment#range}
+     * @param {?HtmlRect} drawAnnotationDraftRect - HTML rect element for the draw annotation draft {@link NbComment#drawAnnotationDraftRect}
+     * @param {?HtmlSvg} drawAnnotationDraftSvg - SVG element in which to insert the draft rect {@link NbComment#drawAnnotationDraftSvg}
      * @param {?NbComment} data.parent - comment this replies to, sets {@link NbComment#parent}
      * @param {?String} data.timestamp - posted timestamp, sets {@link NbComment#timestamp}
      * @param {String} data.author - the author's user ID, sets {@link NbComment#author}
@@ -51,6 +54,20 @@ class NbComment {
          * @type ?NbRange
          */
         this.range = data.range
+
+        /**
+         * HTML rect element for the draw annotation draft. Null if not a draw annotation.
+         * @name NbComment#drawAnnotationDraftRect
+         * @type ?HtmlRect
+         */
+        this.drawAnnotationDraftRect = data.drawAnnotationDraftRect
+
+        /**
+         * SVG element in which to insert the draft rect. Null if not a draw annotation.
+         * @name NbComment#drawAnnotationDraftSvg
+         * @type ?HtmlSvg
+         */
+        this.drawAnnotationDraftSvg = data.drawAnnotationDraftSvg
 
         /**
          * Comment this replies to. Null if this is a thread head.
@@ -295,21 +312,52 @@ class NbComment {
     submitAnnotation(classId, sourceUrl, threadViewInitiator = 'NONE', thread = {}, activeClass = {}, user = {}, onLogNb = () => { }) {
         const token = localStorage.getItem("nb.user");
         if (!this.parent) {
-            const data = {
-                url: sourceUrl,
-                class: classId,
-                content: this.html,
-                range: this.range.serialize(),
-                author: this.author,
-                tags: this.hashtags,
-                userTags: this.people,
-                visibility: CommentVisibility[this.visibility],
-                anonymity: CommentAnonymity[this.anonymity],
-                endorsed: this.endorsed,
-                replyRequest: this.replyRequestedByMe,
-                star: this.upvotedByMe,
-                bookmark: this.bookmarked,
-                type: 'text'
+            let data = {}
+            if (this.drawAnnotationDraftRect) {
+                const serializedRect = {
+                    'x_offset': this.drawAnnotationDraftRect.x,
+                    'y_offset': this.drawAnnotationDraftRect.y,
+                    'width': this.drawAnnotationDraftRect.width,
+                    'height': this.drawAnnotationDraftRect.height
+                  }
+                const serializedSvgElem = DomUtil.serializeTextNode(document, this.drawAnnotationDraftSvg)
+                data = {
+                    url: sourceUrl,
+                    class: classId,
+                    content: this.html,
+                    drawAnnotationDraftRect: serializedRect,
+                    drawAnnotationDraftSvg: serializedSvgElem,
+                    author: this.author,
+                    tags: this.hashtags,
+                    userTags: this.people,
+                    visibility: CommentVisibility[this.visibility],
+                    anonymity: CommentAnonymity[this.anonymity],
+                    endorsed: this.endorsed,
+                    replyRequest: this.replyRequestedByMe,
+                    star: this.upvotedByMe,
+                    bookmark: this.bookmarked,
+                    type: 'text'
+                }
+                console.log(`Rect: ${data.drawAnnotationDraftRect} SVG: ${data.drawAnnotationDraftSvg}`)
+                return
+            } else {
+                data = {
+                    url: sourceUrl,
+                    class: classId,
+                    content: this.html,
+                    range: this.range.serialize(),
+                    author: this.author,
+                    tags: this.hashtags,
+                    userTags: this.people,
+                    visibility: CommentVisibility[this.visibility],
+                    anonymity: CommentAnonymity[this.anonymity],
+                    endorsed: this.endorsed,
+                    replyRequest: this.replyRequestedByMe,
+                    star: this.upvotedByMe,
+                    bookmark: this.bookmarked,
+                    type: 'text'
+                }
+                console.log("Making text annotation")
             }
 
             if (this.type === 'text') {
