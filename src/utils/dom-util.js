@@ -271,6 +271,7 @@ export {
   getFirstTextNodeNotBefore,
   getLastTextNodeUpTo,
   serializeTextNode,
+  getXpathFromNode,
   getNodeFromXpath,
   getNodeFromRelativeXpath,
   decreaseXpathAccuracy

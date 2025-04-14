@@ -315,12 +315,12 @@ class NbComment {
             let data = {}
             if (this.drawAnnotationDraftRect) {
                 const serializedRect = {
-                    'x_offset': this.drawAnnotationDraftRect.x,
-                    'y_offset': this.drawAnnotationDraftRect.y,
-                    'width': this.drawAnnotationDraftRect.width,
-                    'height': this.drawAnnotationDraftRect.height
+                    'x_offset': this.drawAnnotationDraftRect.x.baseVal.value,
+                    'y_offset': this.drawAnnotationDraftRect.y.baseVal.value,
+                    'width': this.drawAnnotationDraftRect.width.baseVal.value,
+                    'height': this.drawAnnotationDraftRect.height.baseVal.value
                   }
-                const serializedSvgElem = DomUtil.serializeTextNode(document, this.drawAnnotationDraftSvg)
+                const serializedSvgElem = DomUtil.getXpathFromNode(this.drawAnnotationDraftSvg, document)
                 data = {
                     url: sourceUrl,
                     class: classId,
@@ -339,7 +339,6 @@ class NbComment {
                     type: 'text'
                 }
                 console.log(`Rect: ${data.drawAnnotationDraftRect} SVG: ${data.drawAnnotationDraftSvg}`)
-                return
             } else {
                 data = {
                     url: sourceUrl,

@@ -9,7 +9,7 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { fas } from '@fortawesome/free-solid-svg-icons'
 import { far } from '@fortawesome/free-regular-svg-icons'
 import { faChevronDown, faChevronUp, faUserCheck, faUserPlus, faCheckSquare } from '@fortawesome/free-solid-svg-icons'
-import { createNbRange, deserializeNbRange } from './models/nbrange.js'
+import { createNbRange, deserializeNbRange, deserializeNode } from './models/nbrange.js'
 import NbComment from './models/nbcomment.js'
 import { CommentAnonymity } from './models/enums.js'
 import NbNotification from './models/nbnotification.js'
@@ -966,7 +966,12 @@ function embedNbApp() {
                 const item = thread.headAnnotation
                 
                 try {
-                    item.range = deserializeNbRange(item.range)
+                    if (item.drawAnnotationDraftRect) {
+                        item.drawAnnotationDraftSvg = deserializeNode(item.drawAnnotationDraftSvg)
+                        console.log(`/annotations/annotation deserialized svg: ${item.drawAnnotationDraftSvg}`)
+                    } else {
+                        item.range = deserializeNbRange(item.range)
+                    }
                 } catch (e) {
                     console.warn(`Could not deserialize range for ${item.id}`)
                 }
@@ -1137,7 +1142,12 @@ function embedNbApp() {
                         }
 
                         try {
-                            item.range = deserializeNbRange(item.range)
+                            if (item.drawAnnotationDraftRect) {
+                                item.drawAnnotationDraftSvg = deserializeNode(item.drawAnnotationDraftSvg)
+                                console.log(`/annotations/annotation deserialized svg: ${item.drawAnnotationDraftSvg}`)
+                            } else {
+                                item.range = deserializeNbRange(item.range)
+                            }
                         } catch (e) {
                             console.warn(`Could not deserialize range for ${item.id}`)
                             continue
@@ -1611,6 +1621,10 @@ function embedNbApp() {
                 this.notificationSelected = null
                 this.stillGatheringThreads = true
                 this.draftRange = null
+                this.drawAnnotationDraftRect = null
+                this.drawAnnotationInProgressRect = null
+                this.drawAnnotationStartPoint = null
+                this.drawAnnotationSvg = null
                 this.isEditorEmpty = true
                 this.isEditorVisible = false
                 this.isInnotationHover = false

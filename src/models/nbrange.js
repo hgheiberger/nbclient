@@ -124,6 +124,34 @@ function createNbRange(range) {
   return new NbRange(nr.start, nr.end, nr.commonAncestor)
 }
 
+
+/**
+* Finds the HTML Element that the DOM Xpath refers to.
+*
+* @param {string} xpath - DOM Xpath of the referred node
+* @param {HTMLElement} root - root element for the serialized range
+* @return {HTMLElement} HTML element referred to by the xpath
+*/
+function deserializeNode (xpath, root = document) {
+  let node
+  try {
+    node = DomUtil.getNodeFromXpath(xpath, root)
+  } catch (e) {
+    console.error(`Error while finding node: ${xpath}: ${e}`)
+  }
+
+  if (!node) {
+    console.warn('---- can not find node, will try another way')
+    node = DomUtil.getNodeFromRelativeXpath(DomUtil.decreaseXpathAccuracy(xpath), root)
+  }
+
+  if (!node) {
+    console.error(`Couldn't find node: ${xpath}`)
+  }
+
+  return node
+}
+
 /**
 * Create a new {@link NBRange} by deserializing a {@link SerializedRange},
 * then normalizing the deserialized range.
