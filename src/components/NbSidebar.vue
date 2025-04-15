@@ -466,11 +466,22 @@ export default {
             this.$emit('editor-visible', isVisible)
         },
         onSubmitSmallComment: async function (data) {
+            let serializedRect = null
+                    if (this.drawAnnotationDraftRect) {
+                        serializedRect = {
+                            'x_offset': this.drawAnnotationDraftRect.x.baseVal.value,
+                            'y_offset': this.drawAnnotationDraftRect.y.baseVal.value,
+                            'width': this.drawAnnotationDraftRect.width.baseVal.value,
+                            'height': this.drawAnnotationDraftRect.height.baseVal.value
+                        }
+                        console.log('NbSidebar:')
+                        console.log(`Serialized Rect - X Offset: ${serializedRect.x_offset}, Y Offset: ${serializedRect.y_offset}, Width: ${serializedRect.width}, Height: ${serializedRect.height}`)
+                    }
             let comment = new NbComment({
                 id: null, // will be updated when submitAnnotation() is called
                 range: null, // null if this is reply
-                drawAnnotationDraftRect: this.drawAnnotationDraftRect, // null if not a draw annotation
-                drawAnnotationDraftSvg: this.drawAnnotationDraftSvg, // null if not a draw annotation
+                drawAnnotationRect: serializedRect, // null if not a draw annotation
+                drawAnnotationSvg: this.drawAnnotationDraftSvg, // null if not a draw annotation
                 parent: data.replyToComment.parent, // null if this is the head of thread
                 timestamp: null,
                 author: this.user.id,
@@ -508,12 +519,23 @@ export default {
                     this.edittingComment.saveUpdates(data, this.activeClass.id, source)
                     this.edittingComment = null
                 } else {
+                    let serializedRect = null
+                    if (this.drawAnnotationDraftRect) {
+                        serializedRect = {
+                            'x_offset': this.drawAnnotationDraftRect.x.baseVal.value,
+                            'y_offset': this.drawAnnotationDraftRect.y.baseVal.value,
+                            'width': this.drawAnnotationDraftRect.width.baseVal.value,
+                            'height': this.drawAnnotationDraftRect.height.baseVal.value
+                        }
+                        console.log('NbSidebar:')
+                        console.log(`Serialized Rect - X Offset: ${serializedRect.x_offset}, Y Offset: ${serializedRect.y_offset}, Width: ${serializedRect.width}, Height: ${serializedRect.height}`)
+                    }
                     let comment = new NbComment({
                         id: null, // will be updated when submitAnnotation() is called
                         type: data.type,
                         range: this.draftRange, // null if this is reply
-                        drawAnnotationDraftRect: this.drawAnnotationDraftRect, // null if not a draw annotation
-                        drawAnnotationDraftSvg: this.drawAnnotationDraftSvg, // null if not a draw annotation
+                        drawAnnotationRect: serializedRect, // null if not a draw annotation
+                        drawAnnotationSvg: this.drawAnnotationDraftSvg, // null if not a draw annotation
                         parent: this.replyToComment, // null if this is the head of thread
                         timestamp: null,
                         author: this.user.id,

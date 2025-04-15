@@ -966,9 +966,8 @@ function embedNbApp() {
                 const item = thread.headAnnotation
                 
                 try {
-                    if (item.drawAnnotationDraftRect) {
-                        item.drawAnnotationDraftSvg = deserializeNode(item.drawAnnotationDraftSvg)
-                        console.log(`/annotations/annotation deserialized svg: ${item.drawAnnotationDraftSvg}`)
+                    if (item.drawAnnotationRect) {
+                        item.drawAnnotationSvg = deserializeNode(item.drawAnnotationSvg)
                     } else {
                         item.range = deserializeNbRange(item.range)
                     }
@@ -1142,9 +1141,8 @@ function embedNbApp() {
                         }
 
                         try {
-                            if (item.drawAnnotationDraftRect) {
-                                item.drawAnnotationDraftSvg = deserializeNode(item.drawAnnotationDraftSvg)
-                                console.log(`/annotations/annotation deserialized svg: ${item.drawAnnotationDraftSvg}`)
+                            if (item.drawAnnotationRect) {
+                                item.drawAnnotationSvg = deserializeNode(item.drawAnnotationSvg)
                             } else {
                                 item.range = deserializeNbRange(item.range)
                             }
@@ -1236,8 +1234,15 @@ function embedNbApp() {
                     const headers = { headers: { Authorization: 'Bearer ' + token } }
                     axios.delete(`/api/annotations/annotation/${thread.id}`, headers)
                     
-                    // Remove CSS higlight for this thread
                     let threadHighlightId = `id${thread.id.substring(0, 12)}`
+                    
+                    // If draw annotation, remove rect from DOM
+                    let drawAnnotation = document.getElementById(threadHighlightId)
+                    if (drawAnnotation) {
+                        drawAnnotation.remove()
+                    }
+
+                    // Remove CSS higlight for this thread
                     CSS.highlights.delete(threadHighlightId)
                     const existingStyle = document.querySelector(`style[highlight-id="${threadHighlightId}"]`)
                     if (existingStyle) {
@@ -1819,7 +1824,6 @@ function embedNbApp() {
             },
             clearDrawAnnotationDraft: function () {
                 if (this.drawAnnotationDraftRect) {
-                    console.log(`clearDrawAnnotationDraft in if with value: ${this.drawAnnotationDraftRect}`)
                     this.drawAnnotationDraftRect.remove()
                     this.drawAnnotationDraftRect = null
                 }

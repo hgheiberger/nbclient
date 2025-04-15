@@ -367,7 +367,8 @@ function normalizeRange(start, startOffset, end, endOffset, commonAncestor) {
 
 export {
   createNbRange,
-  deserializeNbRange
+  deserializeNbRange,
+  deserializeNode
 }
 
 

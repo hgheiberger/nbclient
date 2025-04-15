@@ -11,8 +11,8 @@ class NbComment {
      * @param {Object} data
      * @param {?String} data.id - comment ID, sets {@link NbComment#id}
      * @param {?NbRange} data.range - range of text, sets {@link NbComment#range}
-     * @param {?HtmlRect} drawAnnotationDraftRect - HTML rect element for the draw annotation draft {@link NbComment#drawAnnotationDraftRect}
-     * @param {?HtmlSvg} drawAnnotationDraftSvg - SVG element in which to insert the draft rect {@link NbComment#drawAnnotationDraftSvg}
+     * @param {?HtmlRect} drawAnnotationRect - HTML rect element for the draw annotation {@link NbComment#drawAnnotationRect}
+     * @param {?HtmlSvg} drawAnnotationSvg - SVG element in which to insert the rect {@link NbComment#drawAnnotationSvg}
      * @param {?NbComment} data.parent - comment this replies to, sets {@link NbComment#parent}
      * @param {?String} data.timestamp - posted timestamp, sets {@link NbComment#timestamp}
      * @param {String} data.author - the author's user ID, sets {@link NbComment#author}
@@ -56,18 +56,18 @@ class NbComment {
         this.range = data.range
 
         /**
-         * HTML rect element for the draw annotation draft. Null if not a draw annotation.
-         * @name NbComment#drawAnnotationDraftRect
+         * HTML rect element for the draw annotation. Null if not a draw annotation.
+         * @name NbComment#drawAnnotationRect
          * @type ?HtmlRect
          */
-        this.drawAnnotationDraftRect = data.drawAnnotationDraftRect
+        this.drawAnnotationRect = data.drawAnnotationRect
 
         /**
-         * SVG element in which to insert the draft rect. Null if not a draw annotation.
-         * @name NbComment#drawAnnotationDraftSvg
+         * SVG element in which to insert the rect. Null if not a draw annotation.
+         * @name NbComment#drawAnnotationSvg
          * @type ?HtmlSvg
          */
-        this.drawAnnotationDraftSvg = data.drawAnnotationDraftSvg
+        this.drawAnnotationSvg = data.drawAnnotationSvg
 
         /**
          * Comment this replies to. Null if this is a thread head.
@@ -313,20 +313,22 @@ class NbComment {
         const token = localStorage.getItem("nb.user");
         if (!this.parent) {
             let data = {}
-            if (this.drawAnnotationDraftRect) {
-                const serializedRect = {
-                    'x_offset': this.drawAnnotationDraftRect.x.baseVal.value,
-                    'y_offset': this.drawAnnotationDraftRect.y.baseVal.value,
-                    'width': this.drawAnnotationDraftRect.width.baseVal.value,
-                    'height': this.drawAnnotationDraftRect.height.baseVal.value
-                  }
-                const serializedSvgElem = DomUtil.getXpathFromNode(this.drawAnnotationDraftSvg, document)
+            if (this.drawAnnotationRect) {
+                console.log(this.drawAnnotationRect)
+                const boundingBox = this.drawAnnotationSvg.getBoundingClientRect()
+                console.log(`Bounding Box - Width: ${boundingBox.width}, Height: ${boundingBox.height}`)
+                // Store ratios to account for image resizing
+                this.drawAnnotationRect.x_offset = this.drawAnnotationRect.x_offset / boundingBox.width
+                this.drawAnnotationRect.y_offset = this.drawAnnotationRect.y_offset / boundingBox.height
+                this.drawAnnotationRect.width = this.drawAnnotationRect.width / boundingBox.width
+                this.drawAnnotationRect.height = this.drawAnnotationRect.height / boundingBox.height
+                const serializedSvgElem = `${DomUtil.getXpathFromNode(this.drawAnnotationSvg.parentNode, document)}/svg:svg`
                 data = {
                     url: sourceUrl,
                     class: classId,
                     content: this.html,
-                    drawAnnotationDraftRect: serializedRect,
-                    drawAnnotationDraftSvg: serializedSvgElem,
+                    drawAnnotationRect: this.drawAnnotationRect,
+                    drawAnnotationSvg: serializedSvgElem,
                     author: this.author,
                     tags: this.hashtags,
                     userTags: this.people,
@@ -338,7 +340,7 @@ class NbComment {
                     bookmark: this.bookmarked,
                     type: 'text'
                 }
-                console.log(`Rect: ${data.drawAnnotationDraftRect} SVG: ${data.drawAnnotationDraftSvg}`)
+                console.log(`Rect: ${data.drawAnnotationRect} SVG: ${data.drawAnnotationSvg}`)
             } else {
                 data = {
                     url: sourceUrl,

@@ -154,6 +154,14 @@ function getXpathFromNode(element, root) {
   return `${getXpathFromNode(element.parentNode, root)}/${nodeName}[${index}]`
 }
 
+function handleXpathPrefix (prefix) {
+    if (prefix === 'svg') {
+        return 'http://www.w3.org/2000/svg'
+    } else {
+        return null
+    }
+}
+
 /**
 * Get the node described by the xpath and root element.
 *
@@ -167,7 +175,7 @@ function getNodeFromXpath(xpath, root) {
   let item
 
   try {
-    result = document.evaluate(xpath, root, null, XPathResult.ANY_TYPE, null)
+    result = document.evaluate(xpath, root, handleXpathPrefix, XPathResult.ANY_TYPE, null)
     for (item = result.iterateNext(); item; item = result.iterateNext()) {
       nodes.push(item)
     }

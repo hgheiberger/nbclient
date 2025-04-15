@@ -173,6 +173,11 @@ export default {
         this.generateHighlights()
     },
     unmounted () {
+        let oldAnnotation = document.getElementById(this.highlightId)
+        if (oldAnnotation) {
+            oldAnnotation.remove()
+        }
+
         document.removeEventListener('mousemove', this.handleMouseMove)
         document.removeEventListener('click', this.handleMouseClick)
         CSS.highlights.delete(this.highlightId)
@@ -188,7 +193,14 @@ export default {
         */
         threadSelected: function (val) {
             if (this.thread !== val) { return }
-            let nodeContainingRange = this.thread.range.toRange().commonAncestorContainer
+
+            let nodeContainingRange
+            if (this.thread && this.thread.drawAnnotationRect) {
+                nodeContainingRange = this.thread.drawAnnotationSvg
+            } else {
+                nodeContainingRange = this.thread.range.toRange().commonAncestorContainer
+            }
+
             let rect = nodeContainingRange.getBoundingClientRect()
             let elTop = rect.top
             let elHeight = rect.height
@@ -210,6 +222,10 @@ export default {
             this.generateHighlights()
         },
         highlightId: function (newVal, oldVal) {
+            let oldAnnotation = document.getElementById(oldVal)
+            if (oldAnnotation) {
+                oldAnnotation.remove()
+            }
             CSS.highlights.delete(oldVal)
             this.generateHighlights()
 
@@ -264,7 +280,7 @@ export default {
             //         return 'fill: rgb(255, 0, 255); opacity: 0.5;'
             //     }
             // }
-            return null
+            return 'fill: rgb(255, 204, 1); opacity: 0.2; cursor: pointer;'
         },
         highlightStyle: function () {
             if (this.isHidden) {
@@ -334,11 +350,11 @@ export default {
         },
         bounds: function () {
             let bounds = {}
-            if (this.thread) {
-                bounds.boxes = getTextBoundingBoxes(this.thread.range.toRange())
-            } else if (this.drawAnnotationDraftRect) {
+            if (this.drawAnnotationDraftRect || (this.thread && this.thread.drawAnnotationRect)) {
                 bounds.boxes = {}
                 return bounds
+            } else if (this.thread) {
+                bounds.boxes = getTextBoundingBoxes(this.thread.range.toRange())
             } else {
                 bounds.boxes = getTextBoundingBoxes(this.range.toRange())
             }
@@ -350,10 +366,12 @@ export default {
             return !this.isHidden && (this.showHighlights || (this.thread === this.threadSelected) || (this.showSpotlights && this.spotlight  && this.spotlight.type === 'EM'))
         },
         highlightId: function () {
-            if (this.thread) {
+            if (this.thread && this.thread.drawAnnotationRect) {
                 return `id${this.thread.id.substring(0, 12)}`
             } else if (this.drawAnnotationDraftRect) {
                 return `id${this.drawAnnotationDraftSvg.getBBox()}-${this.drawAnnotationDraftRect.x}-${this.drawAnnotationDraftRect.y}-${this.drawAnnotationDraftRect.width}-${this.drawAnnotationDraftRect.height}`
+            } else if (this.thread) {
+                return `id${this.thread.id.substring(0, 12)}`
             } else {
                 let range = this.range.toRange()
                 return `${range.startContainer.nodeValue}-${range.startOffset}-${range.endOffset}`
@@ -403,7 +421,23 @@ export default {
             }
         },
         handleMouseMove: function (event) {
-            if (this.thread && this.visible) {
+            if (this.thread && this.thread.drawAnnotationRect && this.visible) {
+                let rect = document.getElementById(this.highlightId)
+                let isInside = false
+                if (rect) {
+                    let bbox = rect.getBoundingClientRect()
+                    const mouseX = event.clientX
+                    const mouseY = event.clientY
+                    isInside = mouseX >= bbox.left && mouseX <= bbox.right && mouseY >= bbox.top && mouseY <= bbox.bottom
+                }
+                if (isInside) {
+                    this.isHovered = true
+                    this.onHover(true)
+                } else if (this.isHovered) {
+                    this.isHovered = false
+                    this.onHover(false)
+                }
+            } else if (this.thread && this.visible) {
                 const mousePoint = document.caretPositionFromPoint(event.clientX, event.clientY)
                 const range = this.thread.range.toRange()
                 const existingStyle = document.querySelector(`style[highlight-id="${this.highlightId}"]`)
@@ -417,7 +451,19 @@ export default {
             }
         },
         handleMouseClick: function (event) {
-            if (this.thread && this.visible) {
+            if (this.thread && this.thread.drawAnnotationRect && this.visible) {
+                let rect = document.getElementById(this.highlightId)
+                let isInside = false
+                if (rect) {
+                    let bbox = rect.getBoundingClientRect()
+                    const mouseX = event.clientX
+                    const mouseY = event.clientY
+                    isInside = mouseX >= bbox.left && mouseX <= bbox.right && mouseY >= bbox.top && mouseY <= bbox.bottom
+                }
+                if (isInside) {
+                    this.onClick()
+                }
+            } else if (this.thread && this.visible) {
                 const mousePoint = document.caretPositionFromPoint(event.clientX, event.clientY)
                 const range = this.thread.range.toRange()
                 const existingStyle = document.querySelector(`style[highlight-id="${this.highlightId}"]`)
@@ -495,6 +541,13 @@ export default {
             return content
         },
         updateHighlightStyle: function () {
+            // handle draw annotations
+            if (this.thread && this.thread.drawAnnotationRect) {
+                let annotation = document.getElementById(this.highlightId)
+                annotation.setAttributeNS(null, 'style', this.style)
+                return
+            }
+
             const existingStyle = document.querySelector(`style[highlight-id="${this.highlightId}"]`)
             if (existingStyle) {
                 existingStyle.remove()
@@ -516,6 +569,27 @@ export default {
                }
                 this.drawAnnotationDraftRect.style = this.style
                 this.drawAnnotationDraftSvg.appendChild(this.drawAnnotationDraftRect)
+                return
+            } else if (this.thread && this.thread.drawAnnotationRect) {
+                let oldAnnotation = document.getElementById(this.highlightId)
+                if (oldAnnotation) {
+                    oldAnnotation.remove()
+                }
+
+                let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+                const boundingBox = this.thread.drawAnnotationSvg.getBoundingClientRect()
+                rect.setAttributeNS(null, 'x', this.thread.drawAnnotationRect.x_offset * boundingBox.width)
+                rect.setAttributeNS(null, 'y', this.thread.drawAnnotationRect.y_offset * boundingBox.height)
+                rect.setAttributeNS(null, 'width', this.thread.drawAnnotationRect.width * boundingBox.width)
+                rect.setAttributeNS(null, 'height', this.thread.drawAnnotationRect.height * boundingBox.height)
+                rect.setAttributeNS(null, 'id', this.highlightId)
+                rect.setAttributeNS(null, 'style', this.style)
+                this.thread.drawAnnotationSvg.appendChild(rect)
+                
+                console.log("Event Listeners made")
+                rect.addEventListener('click', this.onClick)
+                rect.addEventListener('mouseenter', () => this.onHover(true))
+                rect.addEventListener('mouseleave', () => this.onHover(false))
                 return
             }
             
