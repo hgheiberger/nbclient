@@ -860,6 +860,17 @@ function embedNbApp() {
             document.addEventListener('dragover', this.dragOver)
             document.addEventListener('dragend', this.dragEnd)
 
+            // Remove all anchor tags on images to allow image annotation
+            document.querySelectorAll('a').forEach(function (anchor) {
+                if (anchor.querySelector('img')) {
+                    // Move all children of the anchor to its parent before removing the anchor
+                    while (anchor.firstChild) {
+                        anchor.parentNode.insertBefore(anchor.firstChild, anchor)
+                    }
+                    anchor.parentNode.removeChild(anchor)
+                }
+              })
+
             for (let imageIndex = 0; imageIndex < document.images.length; imageIndex++) {
                 let image = document.images[imageIndex]
 
