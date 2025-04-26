@@ -4,5 +4,6 @@ export const Environments = {
     dev: { baseURL: "https://127.0.0.1:8080", pluginURL: "https://127.0.0.1:3001" },
     test: { baseURL: "https://test.nb2.csail.mit.edu", pluginURL: "https://test.nb2.csail.mit.edu/client" },
     testHelen: { baseURL: "https://helen-nb.csail.mit.edu", pluginURL: "https://helen-nb.csail.mit.edu/client" },
-    ngrok: { baseURL:"https://nb2.ngrok.io", pluginURL: "https://nb2.ngrok.io/client"}
+    ngrok: { baseURL:"https://nb2.ngrok.io", pluginURL: "https://nb2.ngrok.io/client"},
+    harry: { baseURL: "https://harry.csail.mit.edu", pluginURL: "https://harry.mit.edu/client" }
 }
