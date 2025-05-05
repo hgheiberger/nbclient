@@ -147,6 +147,17 @@ export default {
         }
     },
     mounted () {
+        // Override css stylesheet of pdf_viewer library to fix CSS Custom Highlights styles
+        if (window.location.pathname === '/nb_viewer.html') {
+            const style = document.createElement('style')
+            style.innerHTML = `
+                .textLayer {
+                    opacity: 1 !important;
+                }
+            `
+            document.head.appendChild(style)
+        }
+
         if (this.thread) {
             const totalTime = 60000
             let inView = true
