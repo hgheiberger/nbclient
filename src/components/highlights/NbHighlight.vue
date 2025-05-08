@@ -147,17 +147,6 @@ export default {
         }
     },
     mounted () {
-        // Override css stylesheet of pdf_viewer library to fix CSS Custom Highlights styles
-        if (window.location.pathname === '/nb_viewer.html') {
-            const style = document.createElement('style')
-            style.innerHTML = `
-                .textLayer {
-                    opacity: 1 !important;
-                }
-            `
-            document.head.appendChild(style)
-        }
-
         if (this.thread) {
             const totalTime = 60000
             let inView = true
@@ -372,6 +361,46 @@ export default {
             //     }
             // }
             return 'background-color: rgba(255, 204, 1, 0.2);'
+        },
+        highlightStylePdf: function () {
+            if (this.isHidden) {
+                return "background-color: none; stroke: rgb(255 204 1 / 95%); stroke-dasharray: 3;"
+            }
+            if (!this.thread) {
+                return 'background-color: rgba(231, 76, 60); cursor: pointer;'
+            }
+            if (this.thread === this.threadSelected) {
+                return 'background-color: rgba(1, 99, 255);'
+            }
+            if (this.threadsHovered.includes(this.thread)) {
+                return 'background-color: rgba(1, 99, 255); fill-opacity: 0.12;'
+            }
+            if (this.showSpotlights && this.spotlight && this.spotlight.type === 'EM' && this.currentConfigs.isEmphasize) {
+                let color = this.spotlight.color? this.spotlight.color : 'rgba(0, 255, 0)'
+                return `stroke: ${color}; background-color: ${color}; stroke-opacity: 0.9; stroke-dasharray: 1,1; stroke-width: 2px;`
+            }
+            if (this.showTypingActivityAnimation) { // if typing, show a pink outline color
+                // return 'stroke: rgb(255, 0, 255); stroke-width: 25'
+                return
+            }
+            // if (this.showRecentActivityAnimation) { // if recently shown, show a cyan outline color
+            //     // return 'stroke: rgb(0, 255, 255); stroke-width: 15'
+            //     return
+            // }
+            // if (this.unseenNotificationThread) {
+            //     return 'fill: rgb(80, 54, 255); opacity: 0.7;'
+            //     // return 'stroke: rgb(80, 54, 255); stroke-width: 8; stroke-opacity: 0.2;'
+            // }
+            // if (this.replyRequestThread) {
+            //     if (this.thread.isUnseen() && this.currentConfigs.isShowIndicatorForUnseenThread) {
+            //         // return 'stroke: rgb(255, 0, 255); stroke-width: 8; stroke-opacity: 0.25;'
+            //         return 'fill: rgb(255, 0, 255); opacity: 1.0;'
+            //     } else {
+            //         // return 'stroke: rgb(255, 0, 255); stroke-width: 8; stroke-opacity: 0.10;'
+            //         return 'fill: rgb(255, 0, 255); opacity: 0.5;'
+            //     }
+            // }
+            return 'background-color: rgba(255, 204, 1);'
         },
         isRecentThread: function () {
             return this.thread && this.recent && this.showSyncFeatures
@@ -604,9 +633,13 @@ export default {
                 existingStyle.remove()
             }
             const style = document.createElement('style')
+            let styleToApply = this.highlightStyle
+            if (window.location.pathname === '/nb_viewer.html') {
+                styleToApply = this.highlightStylePdf
+            }
             style.innerHTML = `
                 ::highlight(${this.highlightId}) {
-                    ${this.highlightStyle}
+                    ${styleToApply}
                 }
             `
             style.setAttribute('highlight-id', `${this.highlightId}`)
