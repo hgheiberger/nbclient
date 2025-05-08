@@ -367,6 +367,9 @@ function embedNbApp() {
             drawAnnotationStartPoint: null,
             drawAnnotationInProgressRect: null, // Rectangle placeholder while still dragging a draw annotation
             drawAnnotationDraftRect: null, // Created rectangle after the drag of a draw annotation completes
+            videoPlayer: null,
+            videoAnnotationStartTime: null,
+            videoAnnotationEndTime: null,
             sidebarWidth: 300,
             mousePosition: null,
             redrawHighlightsKey: Date.now(), // work around to force redraw highlights
@@ -888,6 +891,9 @@ function embedNbApp() {
                 svg.classList.add('image-annotation-overlay')
                 wrapper.appendChild(svg)
             }
+            if (window.location.pathname === '/nb_video.html') {
+                this.initializeVideoViewer()
+            }
         },
         unmounted () {
             document.removeEventListener('dragstart', this.dragStart)
@@ -911,7 +917,7 @@ function embedNbApp() {
                 }
             },
             dragStart: function (e) {
-                // Handles image annotation
+                // Handles image & video annotation
                 if (this.user && e.target.tagName.toLowerCase() === 'img') {
                     app.onUnselectThread()
                     e.dataTransfer.setDragImage(this.blankImage, 0, 0)
@@ -922,7 +928,7 @@ function embedNbApp() {
                     this.drawAnnotationInProgressRect.setAttribute('style', 'fill: rgb(231, 76, 60); fill-opacity: 0.3; cursor: pointer; stroke: rgb(67, 14, 8); stroke-opacity: 0.9; stroke-width: 3px;')
                     this.drawAnnotationStartPoint = this.createSvgPoint(this.drawAnnotationSvg, e.clientX, e.clientY)
                     return false
-                  }
+                }
             },
             dragOver: function (e) {
                 if (this.isAnnotatingImage) {
@@ -1642,6 +1648,8 @@ function embedNbApp() {
                 this.drawAnnotationInProgressRect = null
                 this.drawAnnotationStartPoint = null
                 this.drawAnnotationSvg = null
+                this.videoAnnotationStartTime = null
+                this.videoAnnotationEndTime = null
                 this.isEditorEmpty = true
                 this.isEditorVisible = false
                 this.isInnotationHover = false
@@ -1845,6 +1853,55 @@ function embedNbApp() {
                     this.drawAnnotationInProgressRect.remove()
                     this.drawAnnotationInProgressRect = null
                 }
+            },
+            dispatchDragEvent (type, target, clientX, clientY) {
+                const event = new CustomEvent(type, {
+                  detail: {
+                    element: target,
+                    x: clientX,
+                    y: clientY
+                  }
+                })
+                target.dispatchEvent(event)
+            },
+            initializeVideoViewer: function () {
+                const container = document.getElementById('video-annotation-wrapper')
+                const viewer = document.getElementById('viewer')
+                viewer.setAttribute('height', window.innerHeight * 0.75)
+
+                // Create video player
+                const player = new MediaElementPlayer('#viewer', {
+                    features: ['playpause', 'current', 'progress', 'duration', 'volume'],
+                    success: function (mediaElement, domObject) {
+                        mediaElement.load()
+                        mediaElement.play()
+                    }
+                })
+                this.videoPlayer = player
+
+                // Overlay svg on the video
+                let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+                svg.setAttribute('height', player.height * (9 / 10))
+                svg.classList.add('video-annotation-overlay')
+                container.appendChild(svg)
+
+                // Overlay transparent img tag in the container for catching drag annotations
+                let img = document.createElement('img')
+                img.className = 'video-annotation-overlay'
+                img.height = svg.getAttribute('height')
+                img.src = ''
+                img.draggable = true
+                container.appendChild(img)
+
+                img.addEventListener('mouseup', e => {
+                    if (!this.isAnnotatingImage) {
+                        if (this.videoPlayer.media.paused) {
+                            this.videoPlayer.play()
+                        } else {
+                            this.videoPlayer.pause()
+                        }
+                    }
+                })
             }
         },
         components: {
