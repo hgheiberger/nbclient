@@ -1801,3 +1801,58 @@ div.trigger span {
   height: 100%;
   pointer-events: none;
 }
+
+.time-range-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: start;
+  margin: 10px 0;
+  text-align: center;
+}
+
+.time-group {
+  display: flex;
+  flex-direction: row;   /* Arrange label and input horizontally */
+  align-items: center;
+  gap: 16px;             /* Space between label and input */
+}
+
+.time-label {
+  min-width: 120px;
+  display: flex;
+  align-items: center;          /* Vertically center text */
+  justify-content: flex-end;    /* Right-align text; use center for centered text */
+  font-weight: bold;
+  font-size: 1.05rem;
+  color: #333;
+  letter-spacing: 0.5px;
+  height: 100%;                 /* Ensure full height for alignment */
+}
+
+.time-input {
+  display: inline-flex;
+  align-items: center;
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 6px 10px;
+  gap: 4px;
+  font-size: 1rem;
+}
+
+.time-part {
+  width: 2.5em;
+  padding: 4px 6px;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.time-part:focus {
+  border-color: #4caf50;
+  box-shadow: 0 0 5px #4caf50;
+}

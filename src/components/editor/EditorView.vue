@@ -19,6 +19,12 @@
           @thread-stop-typing="onThreadStopTyping">
       </text-editor>
     </div>
+    <timestamp-editor v-if="videoAnnotationStartTime != null"
+      :videoAnnotationStartTime="videoAnnotationStartTime"
+      :videoAnnotationEndTime="videoAnnotationEndTime"
+      @update:videoAnnotationStartTime="$emit('update:videoAnnotationStartTime', $event)"
+      @update:videoAnnotationEndTime="$emit('update:videoAnnotationEndTime', $event)">
+    </timestamp-editor>
     <div v-if="currentConfigs.isCommentMediaAudio" class="area" v-bind:class="{ active: activeTab === 'audio' }">
         <audio-editor v-if="activeTab === 'audio' || mediaBlob"
                       @audio-stop="onAudioStop">
@@ -67,6 +73,7 @@ import htmlToText from 'html-to-text'
 import { CommentVisibility, CommentAnonymity } from '../../models/enums.js'
 import TextEditor from './TextEditor.vue'
 import AudioEditor from './AudioEditor.vue'
+import TimestampEditor from './TimestampEditor.vue'
 
 /**
  * Component for the comment composer/editor on the side bar.
@@ -85,6 +92,8 @@ import AudioEditor from './AudioEditor.vue'
  * @vue-prop {Array<NbUser>} users - all users enrolled in this course
  * @vue-prop {Array<NbHashtag>} hashtags - suggested hashtags in this course
  * @vue-prop {Boolean} visible - true if the comment editor is visible
+ * @vue-prop {Number} videoAnnotationStartTime - if annotating a video, start time of the annotation
+ * @vue-prop {Number} videoAnnotationEndTime - if annotating a video, end time of the annotation
  *
  * @vue-data {Array} toolbar - editor toolbar options to show,
  *   see Quill doc for more info.
@@ -147,6 +156,8 @@ export default {
     users: Array,
     hashtags: Array,
     visible: Boolean,
+    videoAnnotationStartTime: Number,
+    videoAnnotationEndTime: Number
   },
   data () {
     return {
@@ -293,7 +304,8 @@ export default {
   },
   components: {
     TextEditor,
-    AudioEditor
+    AudioEditor,
+    TimestampEditor
   }
 }
 </script>

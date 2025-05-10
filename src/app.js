@@ -215,6 +215,8 @@ function embedNbApp() {
                     :draft-range="draftRange"
                     :drawAnnotationDraftRect="drawAnnotationDraftRect"
                     :drawAnnotationDraftSvg="drawAnnotationSvg"
+                    :videoAnnotationStartTime="videoAnnotationStartTime"
+                    :videoAnnotationEndTime="videoAnnotationEndTime"
                     :show-highlights="showHighlights"
                     :show-spotlights="showSpotlights"
                     :source-url="sourceURL"
@@ -229,6 +231,8 @@ function embedNbApp() {
                     :sync-config="syncConfig"
                     :myfollowing="myfollowing"
                     :filter="filter"
+                    @update:videoAnnotationStartTime="onStartTimeChange"
+                    @update:videoAnnotationEndTime="onEndTimeChange"
                     @handle-redraw-highlights="handleRedrawHighlights"
                     @follow-author="onFollowAuthor"
                     @unfollow-author="onUnfollowAuthor"
@@ -362,7 +366,7 @@ function embedNbApp() {
             },
             syncConfig: false,
             isDragging: false, // indicates if there's a dragging happening in the UI
-            isAnnotatingImage: false,
+            isAnnotatingMedia: false,
             drawAnnotationSvg: null,
             drawAnnotationStartPoint: null,
             drawAnnotationInProgressRect: null, // Rectangle placeholder while still dragging a draw annotation
@@ -911,8 +915,8 @@ function embedNbApp() {
                 if (this.isDragging) {
                     e.preventDefault()
                     this.isDragging = false
-                } else if (this.isAnnotatingImage) {
-                    this.isAnnotatingImage = false
+                } else if (this.isAnnotatingMedia) {
+                    this.isAnnotatingMedia = false
                     return false
                 }
             },
@@ -920,8 +924,13 @@ function embedNbApp() {
                 // Handles image & video annotation
                 if (this.user && e.target.tagName.toLowerCase() === 'img') {
                     app.onUnselectThread()
+                    if (window.location.pathname === '/nb_video.html') {
+                        this.videoPlayer.pause()
+                        this.videoAnnotationStartTime = this.videoPlayer.getCurrentTime()
+                        this.videoAnnotationEndTime = this.videoPlayer.getCurrentTime()
+                    }
                     e.dataTransfer.setDragImage(this.blankImage, 0, 0)
-                    this.isAnnotatingImage = true
+                    this.isAnnotatingMedia = true
                     this.drawAnnotationSvg = e.target.parentNode.querySelector('svg')
                     this.drawAnnotationInProgressRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
                     this.drawAnnotationInProgressRect.setAttributeNS(null, 'rx', 12)
@@ -931,7 +940,7 @@ function embedNbApp() {
                 }
             },
             dragOver: function (e) {
-                if (this.isAnnotatingImage) {
+                if (this.isAnnotatingMedia) {
                     e.preventDefault()
                     if (this.drawAnnotationSvg) {
                         this.updateDrawAnnotationRect(this.drawAnnotationSvg, this.drawAnnotationInProgressRect, this.drawAnnotationStartPoint, e)
@@ -939,8 +948,8 @@ function embedNbApp() {
                 }
             },
             dragEnd: function (e) {
-                if (this.isAnnotatingImage) {
-                    this.isAnnotatingImage = false
+                if (this.isAnnotatingMedia) {
+                    this.isAnnotatingMedia = false
                     if (this.drawAnnotationInProgressRect) {
                         app.draftThread(null)
                     }
@@ -1271,12 +1280,16 @@ function embedNbApp() {
             onNewThread: function (thread) {
                 this.threads.push(thread)
                 this.draftRange = null
+                this.videoAnnotationStartTime = null
+                this.videoAnnotationEndTime = null
                 this.clearDraftHighlights()
                 this.clearDrawAnnotationDraft()
                 this.clearDrawAnnotationInProgress()
             },
             onCancelDraft: function () {
                 this.draftRange = null
+                this.videoAnnotationStartTime = null
+                this.videoAnnotationEndTime = null
                 this.clearDraftHighlights()
                 this.clearDrawAnnotationDraft()
                 this.clearDrawAnnotationInProgress()
@@ -1872,9 +1885,20 @@ function embedNbApp() {
                 // Create video player
                 const player = new MediaElementPlayer('#viewer', {
                     features: ['playpause', 'current', 'progress', 'duration', 'volume'],
-                    success: function (mediaElement, domObject) {
+                    success: (mediaElement, domObject) => {
                         mediaElement.load()
                         mediaElement.play()
+                        mediaElement.addEventListener('timeupdate', (e) => {
+                            // console.log(`shouldupdate: ${this.drawAnnotationInProgressRect != null || this.drawAnnotationDraftRect != null} CurrentTime: ${e.currentTime} StarTime: ${this.videoAnnotationStartTime} EndTime: ${this.videoAnnotationEndTime}`)
+                            if (this.drawAnnotationInProgressRect != null || this.drawAnnotationDraftRect != null) {
+                                if (e.currentTime < this.videoAnnotationStartTime) {
+                                    this.videoAnnotationStartTime = e.currentTime
+                                    this.videoAnnotationEndTime = e.currentTime
+                                } else if (e.currentTime > this.videoAnnotationStartTime) {
+                                    this.videoAnnotationEndTime = e.currentTime
+                                }
+                            }
+                        })
                     }
                 })
                 this.videoPlayer = player
@@ -1893,8 +1917,9 @@ function embedNbApp() {
                 img.draggable = true
                 container.appendChild(img)
 
+                // Allow the user to pause/unpause the video by clicking on it
                 img.addEventListener('mouseup', e => {
-                    if (!this.isAnnotatingImage) {
+                    if (!this.isAnnotatingMedia) {
                         if (this.videoPlayer.media.paused) {
                             this.videoPlayer.play()
                         } else {
@@ -1902,6 +1927,19 @@ function embedNbApp() {
                         }
                     }
                 })
+            },
+            onStartTimeChange: function (e) {
+                this.videoAnnotationStartTime = e
+            },
+            onEndTimeChange: function (e) {
+                if (e < this.videoPlayer.media.duration) {
+                    this.videoAnnotationEndTime = e
+                    this.videoPlayer.setCurrentTime(e)
+                } else {
+                    this.videoAnnotationStartTime = 0
+                    this.videoAnnotationEndTime = 0
+                    this.videoPlayer.setCurrentTime(0)
+                }
             }
         },
         components: {

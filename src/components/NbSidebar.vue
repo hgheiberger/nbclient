@@ -125,6 +125,10 @@
             :hashtags="sortedHashtags"
             :is-submitting="editor.isSubmitting"
             :current-configs="currentConfigs"
+            :videoAnnotationStartTime="videoAnnotationStartTime"
+            :videoAnnotationEndTime="videoAnnotationEndTime"
+            @update:videoAnnotationStartTime="$emit('update:videoAnnotationStartTime', $event)"
+            @update:videoAnnotationEndTime="$emit('update:videoAnnotationEndTime', $event)"
             @editor-empty="onEditorEmpty"
             @submit-comment="onSubmitComment"
             @cancel-comment="onCancelComment"
@@ -208,6 +212,8 @@ export default {
         draftRange: Object,
         drawAnnotationDraftRect: Object, // HTML rect element for the draw annotation draft
         drawAnnotationDraftSvg: Object, // SVG element in which to insert the draft rect
+        videoAnnotationStartTime: Number,
+        videoAnnotationEndTime: Number,
         showHighlights: {
             type: Boolean,
             default: true
@@ -474,14 +480,14 @@ export default {
                             'width': this.drawAnnotationDraftRect.width.baseVal.value,
                             'height': this.drawAnnotationDraftRect.height.baseVal.value
                         }
-                        console.log('NbSidebar:')
-                        console.log(`Serialized Rect - X Offset: ${serializedRect.x_offset}, Y Offset: ${serializedRect.y_offset}, Width: ${serializedRect.width}, Height: ${serializedRect.height}`)
                     }
             let comment = new NbComment({
                 id: null, // will be updated when submitAnnotation() is called
                 range: null, // null if this is reply
                 drawAnnotationRect: serializedRect, // null if not a draw annotation
                 drawAnnotationSvg: this.drawAnnotationDraftSvg, // null if not a draw annotation
+                videoAnnotationStartTime: this.videoAnnotationStartTime, // null if not a video annotation
+                videoAnnotationEndTime: this.videoAnnotationEndTime, // null if not a video annotation
                 parent: data.replyToComment.parent, // null if this is the head of thread
                 timestamp: null,
                 author: this.user.id,
@@ -527,8 +533,6 @@ export default {
                             'width': this.drawAnnotationDraftRect.width.baseVal.value,
                             'height': this.drawAnnotationDraftRect.height.baseVal.value
                         }
-                        console.log('NbSidebar:')
-                        console.log(`Serialized Rect - X Offset: ${serializedRect.x_offset}, Y Offset: ${serializedRect.y_offset}, Width: ${serializedRect.width}, Height: ${serializedRect.height}`)
                     }
                     let comment = new NbComment({
                         id: null, // will be updated when submitAnnotation() is called
@@ -536,6 +540,8 @@ export default {
                         range: this.draftRange, // null if this is reply
                         drawAnnotationRect: serializedRect, // null if not a draw annotation
                         drawAnnotationSvg: this.drawAnnotationDraftSvg, // null if not a draw annotation
+                        videoAnnotationStartTime: this.videoAnnotationStartTime, // null if not a video annotation
+                        videoAnnotationEndTime: this.videoAnnotationEndTime, // null if not a video annotation
                         parent: this.replyToComment, // null if this is the head of thread
                         timestamp: null,
                         author: this.user.id,
