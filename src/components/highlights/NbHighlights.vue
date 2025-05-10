@@ -12,6 +12,7 @@
             :activeClass="activeClass"
             :current-configs="currentConfigs"
             :show-sync-features="showSyncFeatures"
+            :currentVideoTimestamp="currentVideoTimestamp"
             @log-nb="onLogNb"
             @select-thread="onSelectThread"
             @hover-thread="$emit('hover-thread',thread)"
@@ -31,6 +32,7 @@
             :current-configs="currentConfigs"
             :show-sync-features="showSyncFeatures"
             :is-hidden="true"
+            :currentVideoTimestamp="currentVideoTimestamp"
             @log-nb="onLogNb"
             @select-thread="onSelectThread"
             @hover-thread="$emit('hover-thread',thread)"
@@ -63,6 +65,7 @@ import { eventsProxyMouse } from '../../utils/highlight-util.js'
  * @vue-prop {NbRange} draftRange - text range for the new thread currently being drafted
  * @vue-prop {Rect} drawAnnotationDraftRect - HTML rect element for the draw annotation draft
  * @vue-prop {SVG} drawAnnotationDraftSvg - SVG element in which to insert the draft rect
+ * @vue-prop {Number} currentVideoTimestamp - current timestamp of the video player for video annotations
  * @vue-prop {Boolean} showHighlights=true - true if highlights are overlayed
  *   on text, false if collapsed to the side
  *
@@ -94,6 +97,7 @@ export default {
         draftRange: Object,
         drawAnnotationDraftRect: Object,
         drawAnnotationDraftSvg: Object,
+        currentVideoTimestamp: Number,
         showHighlights: {
             type: Boolean,
             default: true

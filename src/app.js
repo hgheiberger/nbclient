@@ -160,6 +160,7 @@ function embedNbApp() {
                     :draft-range="draftRange"
                     :drawAnnotationDraftRect="drawAnnotationDraftRect"
                     :drawAnnotationDraftSvg="drawAnnotationSvg"
+                    :currentVideoTimestamp="currentVideoTimestamp"
                     :show-highlights="showHighlights"
                     :show-spotlights="showSpotlights"
                     :user="user"
@@ -372,6 +373,7 @@ function embedNbApp() {
             drawAnnotationInProgressRect: null, // Rectangle placeholder while still dragging a draw annotation
             drawAnnotationDraftRect: null, // Created rectangle after the drag of a draw annotation completes
             videoPlayer: null,
+            currentVideoTimestamp: null,
             videoAnnotationStartTime: null,
             videoAnnotationEndTime: null,
             sidebarWidth: 300,
@@ -1890,6 +1892,7 @@ function embedNbApp() {
                         mediaElement.play()
                         mediaElement.addEventListener('timeupdate', (e) => {
                             // console.log(`shouldupdate: ${this.drawAnnotationInProgressRect != null || this.drawAnnotationDraftRect != null} CurrentTime: ${e.currentTime} StarTime: ${this.videoAnnotationStartTime} EndTime: ${this.videoAnnotationEndTime}`)
+                            this.currentVideoTimestamp = e.currentTime
                             if (this.drawAnnotationInProgressRect != null || this.drawAnnotationDraftRect != null) {
                                 if (e.currentTime < this.videoAnnotationStartTime) {
                                     this.videoAnnotationStartTime = e.currentTime

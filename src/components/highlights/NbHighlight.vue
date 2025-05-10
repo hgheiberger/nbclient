@@ -82,6 +82,7 @@ import axios from 'axios'
  * @vue-prop {NbRange} range - text range for this higlight
  * @vue-prop {Rect} drawAnnotationDraftRect - HTML rect element for the draw annotation draft
  * @vue-prop {SVG} drawAnnotationDraftSvg - SVG element in which to insert the draft rect
+ * @vue-prop {Number} currentVideoTimestamp - current timestamp of the video player for video annotations
  * @vue-prop {Boolean} showHighlights=true - true if highlights are overlayed
  *   on text, false if collapsed to the side
  *
@@ -115,6 +116,7 @@ export default {
         range: Object,
         drawAnnotationDraftRect: Object,
         drawAnnotationDraftSvg: Object,
+        currentVideoTimestamp: Number,
         showHighlights: {
             type: Boolean,
             default: true
@@ -443,6 +445,12 @@ export default {
             return bounds
         },
         visible: function () {
+            if (this.thread && this.thread.videoAnnotationStartTime) {
+                if (this.currentVideoTimestamp < this.thread.videoAnnotationStartTime || this.currentVideoTimestamp > this.thread.videoAnnotationEndTime) {
+                    return false
+                }
+            }
+
             return !this.isHidden && (this.showHighlights || (this.thread === this.threadSelected) || (this.showSpotlights && this.spotlight  && this.spotlight.type === 'EM'))
         },
         highlightId: function () {
@@ -624,7 +632,9 @@ export default {
             // handle draw annotations
             if (this.thread && this.thread.drawAnnotationRect) {
                 let annotation = document.getElementById(this.highlightId)
-                annotation.setAttributeNS(null, 'style', this.drawAnnotationStyle)
+                if (annotation) {
+                    annotation.setAttributeNS(null, 'style', this.drawAnnotationStyle)
+                }
                 return
             }
 
