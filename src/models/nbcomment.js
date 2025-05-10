@@ -13,6 +13,8 @@ class NbComment {
      * @param {?NbRange} data.range - range of text, sets {@link NbComment#range}
      * @param {?HtmlRect} drawAnnotationRect - HTML rect element for the draw annotation {@link NbComment#drawAnnotationRect}
      * @param {?HtmlSvg} drawAnnotationSvg - SVG element in which to insert the rect {@link NbComment#drawAnnotationSvg}
+     * @param {Number} videoAnnotationStartTime - start time of the video annotation {@link NbComment#videoAnnotationStartTime}
+     * @param {Number} videoAnnotationEndTime - end time of the video annotation {@link NbComment#videoAnnotationEndTime}
      * @param {?NbComment} data.parent - comment this replies to, sets {@link NbComment#parent}
      * @param {?String} data.timestamp - posted timestamp, sets {@link NbComment#timestamp}
      * @param {String} data.author - the author's user ID, sets {@link NbComment#author}
@@ -68,6 +70,20 @@ class NbComment {
          * @type ?HtmlSvg
          */
         this.drawAnnotationSvg = data.drawAnnotationSvg
+
+        /**
+         * Start time of the video annotation. Null if not a video annotation.
+         * @name NbComment#videoAnnotationStartTime
+         * @type ?Number
+         */
+        this.videoAnnotationStartTime = data.videoAnnotationStartTime
+
+        /**
+         * End time of the video annotation. Null if not a video annotation.
+         * @name NbComment#videoAnnotationEndTime
+         * @type ?Number
+         */
+        this.videoAnnotationEndTime = data.videoAnnotationEndTime
 
         /**
          * Comment this replies to. Null if this is a thread head.
@@ -314,9 +330,7 @@ class NbComment {
         if (!this.parent) {
             let data = {}
             if (this.drawAnnotationRect) {
-                console.log(this.drawAnnotationRect)
                 const boundingBox = this.drawAnnotationSvg.getBoundingClientRect()
-                console.log(`Bounding Box - Width: ${boundingBox.width}, Height: ${boundingBox.height}`)
                 // Store ratios to account for image resizing
                 this.drawAnnotationRect.x_offset = this.drawAnnotationRect.x_offset / boundingBox.width
                 this.drawAnnotationRect.y_offset = this.drawAnnotationRect.y_offset / boundingBox.height
@@ -340,7 +354,6 @@ class NbComment {
                     bookmark: this.bookmarked,
                     type: 'text'
                 }
-                console.log(`Rect: ${data.drawAnnotationRect} SVG: ${data.drawAnnotationSvg}`)
             } else {
                 data = {
                     url: sourceUrl,
@@ -358,7 +371,11 @@ class NbComment {
                     bookmark: this.bookmarked,
                     type: 'text'
                 }
-                console.log("Making text annotation")
+            }
+
+            if (this.videoAnnotationStartTime) {
+                data.videoAnnotationStartTime = this.videoAnnotationStartTime
+                data.videoAnnotationEndTime = this.videoAnnotationEndTime
             }
 
             if (this.type === 'text') {

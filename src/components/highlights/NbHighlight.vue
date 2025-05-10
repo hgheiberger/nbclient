@@ -443,6 +443,7 @@ export default {
             return bounds
         },
         visible: function () {
+            console.log(`Visible: ${!this.isHidden && (this.showHighlights || (this.thread === this.threadSelected) || (this.showSpotlights && this.spotlight  && this.spotlight.type === 'EM'))}`)
             return !this.isHidden && (this.showHighlights || (this.thread === this.threadSelected) || (this.showSpotlights && this.spotlight  && this.spotlight.type === 'EM'))
         },
         highlightId: function () {

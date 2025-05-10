@@ -111,6 +111,12 @@ function eventsProxyMouse (src, target) {
         return
       }
     }
+
+    // ignore mouse click if it is part of the video player during video annotations
+    if (window.location.pathname === '/nb_video.html' && isNodePartOf(e.target, document.querySelector('#mep_0'))) {
+      return
+    }
+
     // clicked outside of highlights, unselect all threads
     target.dispatchEvent(new CustomEvent('unselect-thread'))
   })
