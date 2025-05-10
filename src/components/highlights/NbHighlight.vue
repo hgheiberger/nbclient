@@ -443,7 +443,6 @@ export default {
             return bounds
         },
         visible: function () {
-            console.log(`Visible: ${!this.isHidden && (this.showHighlights || (this.thread === this.threadSelected) || (this.showSpotlights && this.spotlight  && this.spotlight.type === 'EM'))}`)
             return !this.isHidden && (this.showHighlights || (this.thread === this.threadSelected) || (this.showSpotlights && this.spotlight  && this.spotlight.type === 'EM'))
         },
         highlightId: function () {
@@ -660,7 +659,9 @@ export default {
                 if (oldAnnotation) {
                     oldAnnotation.remove()
                 }
-
+                if (!this.visible) {
+                    return
+                }
                 let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
                 const boundingBox = this.thread.drawAnnotationSvg.getBoundingClientRect()
                 rect.setAttributeNS(null, 'x', this.thread.drawAnnotationRect.x_offset * boundingBox.width)
