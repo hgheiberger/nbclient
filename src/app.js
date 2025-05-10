@@ -595,6 +595,15 @@ function embedNbApp() {
                 },
                 deep: true
             },
+            threadSelected: function (newThread, oldThread) {
+                // On thread selection of a video annotation, zoom the video to the video annotation's start time
+                if (document.location.href.includes('/nb_video.html') && newThread && newThread !== oldThread) {
+                    if (this.videoPlayer.getCurrentTime() < newThread.videoAnnotationStartTime ||
+                        this.videoPlayer.getCurrentTime() > newThread.videoAnnotationEndTime) {
+                        this.videoPlayer.setCurrentTime(newThread.videoAnnotationStartTime + 0.1)
+                    }
+                }
+            },
             user: async function (newUser, oldUser) {
                 if (!newUser) return // logged out
                 if (newUser === oldUser) return // same user, do nothing
