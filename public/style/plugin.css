@@ -451,10 +451,18 @@
 #nb-app .nb-sidebar .list-view .list-row  .top-line {
   display: flex;
   flex-direction: row;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
   flex-grow: 1;
+  width: 100%;
 }
+
+#nb-app .nb-sidebar .list-view .list-row  .top-line .video-time{
+  display: flex; 
+  flex-direction: column;
+  text-align: right;
+}
+
 #nb-app .nb-sidebar .list-view .list-row  .bottom-line {
   display: flex;
   flex-direction: row;
@@ -462,6 +470,8 @@
   align-items: center;
   width: 100%;
 }
+
+
 #nb-app .nb-sidebar .list-view .list-row  .bottom-line .time {
   font-size: 9px;
   color: #aaa;

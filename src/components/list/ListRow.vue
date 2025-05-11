@@ -14,6 +14,10 @@
             <span v-else :style="textStyle">
                 {{ thread.type }} by {{authorName}}
             </span>
+            <div v-if='thread.videoAnnotationStartTime' class="video-time">
+                <span>Start Time: {{ formattedStartTime }}</span>
+                <span>End Time: {{ formattedEndTime }}</span>
+             </div>
         </div>
         <div class="bottom-line">
              <div class="flags">
@@ -182,6 +186,19 @@ export default {
 
             this.$emit('select-thread', this.thread, 'LIST')
         },
+        convertTimeFormat: function (timeInSeconds) {
+            const seconds = Math.floor(timeInSeconds)
+            const hours = Math.floor(seconds / 3600)
+            const minutes = Math.floor((seconds % 3600) / 60)
+            const secs = seconds % 60
+
+            // Pad with leading zeros if needed
+            const hh = hours.toString().padStart(2, '0')
+            const mm = minutes.toString().padStart(2, '0')
+            const ss = secs.toString().padStart(2, '0')
+
+            return `${hh}:${mm}:${ss}`
+        }
     },
     computed: {
         spotlight: function () {
@@ -261,6 +278,18 @@ export default {
             }
             return this.thread.authorName
         },
+        formattedStartTime: function () {
+            if (this.thread.videoAnnotationStartTime) {
+                return this.convertTimeFormat(this.thread.videoAnnotationStartTime)
+            }
+            return ''
+        },
+        formattedEndTime: function () {
+            if (this.thread.videoAnnotationEndTime) {
+                return this.convertTimeFormat(this.thread.videoAnnotationEndTime)
+            }
+            return ''
+        }
     },
     watch: {
         /**
