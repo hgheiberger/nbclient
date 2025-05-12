@@ -1900,14 +1900,15 @@ function embedNbApp() {
                         mediaElement.load()
                         mediaElement.play()
                         mediaElement.addEventListener('timeupdate', (e) => {
-                            // console.log(`shouldupdate: ${this.drawAnnotationInProgressRect != null || this.drawAnnotationDraftRect != null} CurrentTime: ${e.currentTime} StarTime: ${this.videoAnnotationStartTime} EndTime: ${this.videoAnnotationEndTime}`)
-                            this.currentVideoTimestamp = e.currentTime
+                            // console.log(e)
+                            // console.log(`shouldupdate: ${this.drawAnnotationInProgressRect != null || this.drawAnnotationDraftRect != null} CurrentTime: ${this.videoPlayer.getCurrentTime()} StarTime: ${this.videoAnnotationStartTime} EndTime: ${this.videoAnnotationEndTime}`)
+                            this.currentVideoTimestamp = this.videoPlayer.getCurrentTime()
                             if (this.drawAnnotationInProgressRect != null || this.drawAnnotationDraftRect != null) {
-                                if (e.currentTime < this.videoAnnotationStartTime) {
-                                    this.videoAnnotationStartTime = e.currentTime
-                                    this.videoAnnotationEndTime = e.currentTime
-                                } else if (e.currentTime > this.videoAnnotationStartTime) {
-                                    this.videoAnnotationEndTime = e.currentTime
+                                if (this.videoPlayer.getCurrentTime() < this.videoAnnotationStartTime) {
+                                    this.videoAnnotationStartTime = this.videoPlayer.getCurrentTime()
+                                    this.videoAnnotationEndTime = this.videoPlayer.getCurrentTime()
+                                } else if (this.videoPlayer.getCurrentTime() > this.videoAnnotationStartTime) {
+                                    this.videoAnnotationEndTime = this.videoPlayer.getCurrentTime()
                                 }
                             }
                         })
@@ -1925,6 +1926,7 @@ function embedNbApp() {
                 let img = document.createElement('img')
                 img.className = 'video-annotation-overlay'
                 img.height = svg.getAttribute('height')
+                img.id = 'video-annotation-img'
                 img.src = ''
                 img.draggable = true
                 container.appendChild(img)
