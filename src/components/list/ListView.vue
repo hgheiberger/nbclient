@@ -212,6 +212,10 @@ export default {
             }
         },
         sorted: function () {
+            if (document.location.href.includes('/nb_video.html')) {
+                return this.threads.concat().sort(compare('videoAnnotationStartTime', 'key', true))
+            }
+
             switch (this.sortBy) {
                 case 'position':
                     return this.threads.concat().sort(compareDomPosition)
