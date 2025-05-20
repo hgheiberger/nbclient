@@ -891,21 +891,13 @@ function embedNbApp() {
 
             for (let imageIndex = 0; imageIndex < document.images.length; imageIndex++) {
                 let image = document.images[imageIndex]
-
-                // Wrap the image in a div
-                let parent = image.parentNode
-                let wrapper = document.createElement('div')
-                wrapper.className = 'image-annotation-container'
-                parent.replaceChild(wrapper, image)
-                wrapper.appendChild(image)
-
-                // Create a SVG to hold image annotations
-                let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-                svg.setAttribute('width', image.clientWidth)
-                svg.setAttribute('height', image.clientHeight)
-                svg.classList.add('image-annotation-overlay')
-                wrapper.appendChild(svg)
+                this.setupImageAnnotation(image)
             }
+
+            document.querySelectorAll('canvas').forEach((canvas) => {
+                this.setupImageAnnotation(canvas)
+            })
+
             if (window.location.pathname === '/nb_video.html') {
                 this.initializeVideoViewer()
             }
@@ -933,7 +925,7 @@ function embedNbApp() {
             },
             dragStart: function (e) {
                 // Handles image & video annotation
-                if (this.user && e.target.tagName.toLowerCase() === 'img') {
+                if (this.user && (e.target.tagName.toLowerCase() === 'img' || e.target.tagName.toLowerCase() === 'canvas')) {
                     app.onUnselectThread()
                     if (window.location.pathname === '/nb_video.html') {
                         this.videoPlayer.pause()
@@ -1847,6 +1839,23 @@ function embedNbApp() {
                 p.x = x
                 p.y = y
                 return p.matrixTransform(svgElem.getScreenCTM().inverse())
+            },
+            setupImageAnnotation: function (htmlNode) {
+                htmlNode.draggable = true
+
+                // Wrap the image in a div
+                let parent = htmlNode.parentNode
+                let wrapper = document.createElement('div')
+                wrapper.className = 'image-annotation-container'
+                parent.replaceChild(wrapper, htmlNode)
+                wrapper.appendChild(htmlNode)
+
+                // Create a SVG to hold image annotations
+                let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+                svg.setAttribute('width', htmlNode.clientWidth)
+                svg.setAttribute('height', htmlNode.clientHeight)
+                svg.classList.add('image-annotation-overlay')
+                wrapper.appendChild(svg)
             },
             updateDrawAnnotationRect: function (svgElem, rect, rectStartPoint, mousePosEvent) {
                 const p = this.createSvgPoint(svgElem, mousePosEvent.clientX, mousePosEvent.clientY)
