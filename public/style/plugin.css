@@ -1792,11 +1792,6 @@ div.trigger span {
   display: inline-block;
 }
  
-.image-annotation-container img {
-  display: block;
-  width: 100%;
-}
- 
 .image-annotation-overlay {
   position: absolute;
   top: 0;
