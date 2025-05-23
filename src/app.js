@@ -895,7 +895,7 @@ function embedNbApp() {
             }
 
             document.querySelectorAll('canvas').forEach((canvas) => {
-                this.setupImageAnnotation(canvas)
+                //this.setupImageAnnotation(canvas)
             })
 
             if (window.location.pathname === '/nb_video.html') {
@@ -925,7 +925,7 @@ function embedNbApp() {
             },
             dragStart: function (e) {
                 // Handles image & video annotation
-                if (this.user && (e.target.tagName.toLowerCase() === 'img' || e.target.tagName.toLowerCase() === 'canvas')) {
+                if (this.user && (e.target.tagName.toLowerCase() === 'img')) {
                     app.onUnselectThread()
                     if (window.location.pathname === '/nb_video.html') {
                         this.videoPlayer.pause()
