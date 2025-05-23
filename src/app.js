@@ -937,7 +937,11 @@ function embedNbApp() {
                     this.drawAnnotationSvg = e.target.parentNode.querySelector('svg')
                     this.drawAnnotationInProgressRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
                     this.drawAnnotationInProgressRect.setAttributeNS(null, 'rx', 12)
-                    this.drawAnnotationInProgressRect.setAttribute('style', 'fill: rgb(231, 76, 60); fill-opacity: 0.3; cursor: pointer; stroke: rgb(67, 14, 8); stroke-opacity: 0.9; stroke-width: 3px;')
+                    let opacityToApply = 0.3
+                    if (window.location.pathname === '/nb_viewer.html') {
+                        opacityToApply = 1.0
+                    }
+                    this.drawAnnotationInProgressRect.setAttribute('style', `fill: rgb(231, 76, 60); fill-opacity: ${opacityToApply}; cursor: pointer; stroke: rgb(67, 14, 8); stroke-opacity: 0.9; stroke-width: 3px;`)
                     this.drawAnnotationStartPoint = this.createSvgPoint(this.drawAnnotationSvg, e.clientX, e.clientY)
                     return false
                 }

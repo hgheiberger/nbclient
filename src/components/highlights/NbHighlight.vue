@@ -324,6 +324,46 @@ export default {
             // }
             return 'fill: rgb(255, 204, 1); opacity: 0.35; cursor: pointer; stroke: rgb(40, 32, 0); stroke-opacity: 0.9; stroke-width: 3px;'
         },
+        drawAnnotationStylePdf: function () {
+            if (this.isHidden) {
+                return "fill: none; stroke: rgb(255 204 1 / 95%); stroke-dasharray: 3;"
+            }
+            if (!this.thread) {
+                return 'fill: rgb(231, 76, 60); cursor: pointer; stroke: rgb(67, 14, 8); stroke-opacity: 0.9; stroke-width: 3px;'
+            }
+            if (this.thread === this.threadSelected) {
+                return 'fill: rgb(1, 99, 255); cursor: pointer; stroke: rgb(0, 15, 40); stroke-opacity: 0.9; stroke-width: 3px;'
+            }
+            if (this.threadsHovered.includes(this.thread)) {
+                return 'fill: rgb(1, 99, 255); cursor: pointer; stroke: rgb(0, 23, 60); stroke-opacity: 0.9; stroke-width: 3px;'
+            }
+            if (this.showSpotlights && this.spotlight && this.spotlight.type === 'EM' && this.currentConfigs.isEmphasize) {
+                let color = this.spotlight.color? this.spotlight.color : 'lime'
+                return `stroke: ${color}; fill: ${color}; stroke-opacity: 0.9; stroke-dasharray: 1,1; stroke-width: 3px; cursor: pointer;`
+            }
+            if (this.showTypingActivityAnimation) { // if typing, show a pink outline color
+                // return 'stroke: rgb(255, 0, 255); stroke-width: 25'
+                return
+            }
+            // if (this.showRecentActivityAnimation) { // if recently shown, show a cyan outline color
+            //     // return 'stroke: rgb(0, 255, 255); stroke-width: 15'
+            //     return
+            // }
+            // if (this.unseenNotificationThread) {
+            //     return 'fill: rgb(80, 54, 255); opacity: 0.7;'
+            //     // return 'stroke: rgb(80, 54, 255); stroke-width: 8; stroke-opacity: 0.2;'
+            // }
+            // if (this.replyRequestThread) {
+            //     if (this.thread.isUnseen() && this.currentConfigs.isShowIndicatorForUnseenThread) {
+            //         // return 'stroke: rgb(255, 0, 255); stroke-width: 8; stroke-opacity: 0.25;'
+            //         return 'fill: rgb(255, 0, 255); opacity: 1.0;'
+            //     } else {
+            //         // return 'stroke: rgb(255, 0, 255); stroke-width: 8; stroke-opacity: 0.10;'
+            //         return 'fill: rgb(255, 0, 255); opacity: 0.5;'
+            //     }
+            // }
+            return 'fill: rgb(255, 204, 1); cursor: pointer; stroke: rgb(40, 32, 0); stroke-opacity: 0.9; stroke-width: 3px;'
+        },
         highlightStyle: function () {
             if (this.isHidden) {
                 return "background-color: none; stroke: rgb(255 204 1 / 95%); stroke-dasharray: 3;"
@@ -633,7 +673,11 @@ export default {
             if (this.thread && this.thread.drawAnnotationRect) {
                 let annotation = document.getElementById(this.highlightId)
                 if (annotation) {
-                    annotation.setAttributeNS(null, 'style', this.drawAnnotationStyle)
+                    let styleToApply = this.drawAnnotationStyle
+                    if (window.location.pathname === '/nb_viewer.html') {
+                        styleToApply = this.drawAnnotationStylePdf
+                    }
+                    annotation.setAttributeNS(null, 'style', styleToApply)
                 }
                 return
             }
@@ -661,7 +705,11 @@ export default {
                if (document.body.contains(this.drawAnnotationDraftRect)) {
                 this.drawAnnotationDraftRect.remove()
                }
-                this.drawAnnotationDraftRect.style = this.drawAnnotationStyle
+                let styleToApply = this.drawAnnotationStyle
+                if (window.location.pathname === '/nb_viewer.html') {
+                    styleToApply = this.drawAnnotationStylePdf
+                }
+                this.drawAnnotationDraftRect.style = styleToApply
                 this.drawAnnotationDraftSvg.appendChild(this.drawAnnotationDraftRect)
                 return
             } else if (this.thread && this.thread.drawAnnotationRect) {
@@ -674,13 +722,17 @@ export default {
                 }
                 let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
                 const boundingBox = this.thread.drawAnnotationSvg.getBoundingClientRect()
+                let styleToApply = this.drawAnnotationStyle
+                if (window.location.pathname === '/nb_viewer.html') {
+                    styleToApply = this.drawAnnotationStylePdf
+                }
                 rect.setAttributeNS(null, 'x', this.thread.drawAnnotationRect.x_offset * boundingBox.width)
                 rect.setAttributeNS(null, 'y', this.thread.drawAnnotationRect.y_offset * boundingBox.height)
                 rect.setAttributeNS(null, 'rx', 12)
                 rect.setAttributeNS(null, 'width', this.thread.drawAnnotationRect.width * boundingBox.width)
                 rect.setAttributeNS(null, 'height', this.thread.drawAnnotationRect.height * boundingBox.height)
                 rect.setAttributeNS(null, 'id', this.highlightId)
-                rect.setAttributeNS(null, 'style', this.drawAnnotationStyle)
+                rect.setAttributeNS(null, 'style', styleToApply)
                 this.thread.drawAnnotationSvg.appendChild(rect)
                 return
             }
